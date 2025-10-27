@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
@@ -49,25 +48,6 @@ export function TransactionHistoryCard({
   className,
 }: TransactionHistoryCardProps) {
   const { data, isPending, isError, error } = useTransactionHistory();
-
-  const totals = useMemo(() => {
-    if (!data?.length) {
-      return { totalTransactions: 0, avgGasPrice: 0 };
-    }
-
-    const totalTransactions = data.reduce(
-      (sum, point) => sum + point.transactionCount,
-      0
-    );
-    const avgGasPrice =
-      data.reduce((sum, point) => sum + point.averageGasPriceGwei, 0) /
-      data.length;
-
-    return {
-      totalTransactions,
-      avgGasPrice,
-    };
-  }, [data]);
 
   return (
     <Card

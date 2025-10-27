@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 
 import {
@@ -46,22 +45,6 @@ const chartConfig = {
 
 export function GasPriceTrendCard({ className }: GasPriceTrendCardProps) {
   const { data, isPending, isError, error } = useGasPriceChartData("daily");
-
-  const aggregates = useMemo(() => {
-    if (!data?.length) {
-      return { average: 0, p95: 0, minimum: 0 };
-    }
-
-    const divisor = data.length;
-    const average =
-      data.reduce((sum, point) => sum + point.averageGasPriceGwei, 0) / divisor;
-    const p95 =
-      data.reduce((sum, point) => sum + point.p95GasPriceGwei, 0) / divisor;
-    const minimum =
-      data.reduce((sum, point) => sum + point.minimumGasPriceGwei, 0) / divisor;
-
-    return { average, p95, minimum };
-  }, [data]);
 
   return (
     <Card

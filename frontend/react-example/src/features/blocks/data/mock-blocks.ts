@@ -51,6 +51,4 @@ export const MOCK_BLOCK_DETAILS: BlockDetail[] = Array.from(
   (_, index) => buildBlock(index)
 );
 
-export const MOCK_LATEST_BLOCKS: BlockSummary[] = MOCK_BLOCK_DETAILS.map(
-  ({ sizeBytes, rewardEth, uncleCount, ...summary }) => summary
-);
+export const MOCK_LATEST_BLOCKS: BlockSummary[] = MOCK_BLOCK_DETAILS;
