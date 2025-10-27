@@ -69,7 +69,7 @@ export function GasPriceHeatmapCard({ className }: GasPriceHeatmapCardProps) {
     if (maxValue === minValue) {
       return {
         backgroundColor: "hsl(142 65% 88%)",
-        color: "hsl(142 40% 25%)",
+        color: "hsl(142 50% 30%)",
         borderColor: "hsl(142 45% 80%)",
       };
     }
@@ -77,7 +77,8 @@ export function GasPriceHeatmapCard({ className }: GasPriceHeatmapCardProps) {
     const intensity = (value - minValue) / (maxValue - minValue);
     const lightness = 90 - intensity * 48;
     const backgroundColor = `hsl(142 75% ${lightness}%)`;
-    const color = intensity > 0.62 ? "white" : "hsl(142 40% 22%)";
+    const colorLightness = Math.max(22, 30 - intensity * 8);
+    const color = `hsl(142 ${50 + intensity * 25}% ${colorLightness}%)`;
     const borderColor = `hsl(142 55% ${78 - intensity * 28}%)`;
 
     return { backgroundColor, color, borderColor };
@@ -126,7 +127,7 @@ export function GasPriceHeatmapCard({ className }: GasPriceHeatmapCardProps) {
                 <strong> {maxValue.toFixed(1)}</strong> Gwei
               </span>
             </div>
-            <div className="rounded-3xl border border-emerald-200/70 bg-white/75 p-4 shadow-inner shadow-emerald-100">
+            <div>
               <div className="overflow-x-auto">
                 <table className="w-full border-separate border-spacing-0 text-center text-[0.78rem] font-medium text-emerald-800">
                   <thead>

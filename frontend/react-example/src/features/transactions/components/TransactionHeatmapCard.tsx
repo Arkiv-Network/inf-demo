@@ -63,7 +63,7 @@ export function TransactionHeatmapCard({
     if (maxValue === 0) {
       return {
         backgroundColor: "hsl(204 100% 94%)",
-        color: "hsl(222 47% 11%)",
+        color: "hsl(204 60% 35%)",
         borderColor: "hsl(204 70% 85%)",
       };
     }
@@ -71,7 +71,8 @@ export function TransactionHeatmapCard({
     const intensity = value / maxValue;
     const lightness = 95 - intensity * 55;
     const backgroundColor = `hsl(204 90% ${lightness}%)`;
-    const color = intensity > 0.55 ? "white" : "hsl(222 47% 15%)";
+    const colorLightness = Math.max(25, 35 - intensity * 10);
+    const color = `hsl(204 ${60 + intensity * 20}% ${colorLightness}%)`;
     const borderColor = `hsl(204 80% ${80 - intensity * 28}%)`;
 
     return { backgroundColor, color, borderColor };
@@ -120,7 +121,7 @@ export function TransactionHeatmapCard({
                 tx/h
               </span>
             </div>
-            <div className="rounded-3xl border border-sky-200/70 bg-white/70 p-4 shadow-inner shadow-sky-100">
+            <div>
               <div className="overflow-x-auto">
                 <table className="w-full border-separate border-spacing-0 text-center text-[0.78rem] font-medium text-slate-700">
                   <thead>
