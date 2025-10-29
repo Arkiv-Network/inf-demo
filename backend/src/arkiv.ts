@@ -10,11 +10,11 @@ import { jsonToPayload, stringToPayload } from "@arkiv-network/sdk/utils";
 import type { Block, Chain } from "viem";
 import { defineChain } from "viem";
 import type { AggregatedDataSchema, BlockSchema } from "./types";
-import { aggregatedDataSchema, blockSchema } from "./types";
+import { blockSchema } from "./types";
 
 const MONTH_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const WEEK_IN_SECONDS = 60 * 60 * 24 * 7; // 7 days
-const DATA_VERSION = "0.3";
+const DATA_VERSION = "0.4";
 
 const chains = {
 	kaolin: kaolin,
@@ -243,6 +243,10 @@ export async function storeAggregatedData(
 			{
 				key: "InfuraDemo_dataType",
 				value: "stats",
+			},
+			{
+				key: "InfuraDemo_statsType",
+				value: aggType,
 			},
 			{
 				key: "InfuraDemo_statsTimestamp",
