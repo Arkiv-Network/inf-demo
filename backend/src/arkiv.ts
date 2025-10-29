@@ -167,20 +167,17 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 
 	console.info("Blocks stored successfully:", receipt);
 	console.info("Latest Ethereum block number:", latestEthBlockNumber);
-
-	// Store latest block number if it is higher than the latest block number in Arkiv
-	const latestBlockNumber = await getLatestBlockNumber();
-	if (latestBlockNumber && latestEthBlockNumber > latestBlockNumber) {
-		await updateLatestBlockNumber(latestEthBlockNumber);
-	} else if (!latestBlockNumber && latestEthBlockNumber) {
-		await storeLatestBlockNumber(latestEthBlockNumber);
-	}
 }
 
 export async function getLatestBlockNumber(): Promise<bigint> {
-	const result = await getLatestBlockNumberEntity();
-	console.debug("result from query - latestBlockNumber", result);
-	return result ? BigInt(result.toText()) : 0n;
+	const last10Mins = Math.floor(Date.now() / 1000) - 10 * 60; // last 10 mins
+	const blocks = await getBlocksSinceTimestamp(last10Mins);
+	// get highest block number
+	const highestBlockNumber = blocks.reduce(
+		(max, block) => (max > block.blockNumber ? max : block.blockNumber),
+		0n,
+	);
+	return highestBlockNumber;
 }
 
 export async function getBlock(blockNumber?: number): Promise<Entity | null> {
