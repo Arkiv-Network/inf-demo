@@ -1,13 +1,10 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import {
-	getBlock as getBlockOnArkiv,
-	getLatestBlockNumber,
-	storeBlock,
-} from "./arkiv";
+import { getLatestBlockNumber, storeBlock } from "./arkiv";
 import { getBlock as getBlockOnEth, getGasPrice } from "./eth";
 
 const app = new Hono();
+
 // Enable CORS for all routes
 app.use("*", cors());
 

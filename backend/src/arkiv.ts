@@ -10,7 +10,7 @@ import { jsonToPayload, stringToPayload } from "@arkiv-network/sdk/utils";
 import type { Block, Chain } from "viem";
 import { defineChain } from "viem";
 
-const MONTH_IN_SECONDS = 1000 * 60 * 60 * 24 * 30;
+const MONTH_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
 
 const chains = {
 	kaolin: kaolin,
