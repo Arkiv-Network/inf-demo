@@ -5,13 +5,16 @@ import {
 } from "@arkiv-network/sdk";
 import { privateKeyToAccount } from "@arkiv-network/sdk/accounts";
 import { kaolin, localhost } from "@arkiv-network/sdk/chains";
-import { eq } from "@arkiv-network/sdk/query";
+import { eq, gt } from "@arkiv-network/sdk/query";
 import { jsonToPayload, stringToPayload } from "@arkiv-network/sdk/utils";
 import type { Block, Chain } from "viem";
 import { defineChain } from "viem";
+import type { AggregatedDataSchema, BlockSchema } from "./types";
+import { aggregatedDataSchema, blockSchema } from "./types";
 
 const MONTH_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
-const DATA_VERSION = "0.2";
+const WEEK_IN_SECONDS = 60 * 60 * 24 * 7; // 7 days
+const DATA_VERSION = "0.3";
 
 const chains = {
 	kaolin: kaolin,
@@ -49,8 +52,8 @@ async function storeLatestBlockNumber(blockNumber: bigint) {
 				value: "InfuraDemo",
 			},
 			{
-				key: "InfuraDemo_data",
-				value: "latestBlockNumber",
+				key: "InfuraDemo_dataType",
+				value: "blocknumber",
 			},
 			{
 				key: "InfuraDemo_version",
@@ -81,8 +84,8 @@ async function updateLatestBlockNumber(blockNumber: bigint) {
 				value: "InfuraDemo",
 			},
 			{
-				key: "InfuraDemo_data",
-				value: "latestBlockNumber",
+				key: "InfuraDemo_dataType",
+				value: "blocknumber",
 			},
 			{
 				key: "InfuraDemo_version",
@@ -96,7 +99,7 @@ async function getLatestBlockNumberEntity(): Promise<Entity | null> {
 		.buildQuery()
 		.where([
 			eq("project", "InfuraDemo"),
-			eq("InfuraDemo_data", "latestBlockNumber"),
+			eq("InfuraDemo_dataType", "blocknumber"),
 			eq("InfuraDemo_version", DATA_VERSION),
 		])
 		.limit(1)
@@ -106,71 +109,71 @@ async function getLatestBlockNumberEntity(): Promise<Entity | null> {
 }
 
 export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
-	try {
-		let latestEthBlockNumber = 0n;
-		const receipt = await arkivClient.mutateEntities({
-			creates: blocks.map((block) => {
-				const blockNumber = block.number ?? 0n;
-				if (blockNumber > latestEthBlockNumber) {
-					latestEthBlockNumber = blockNumber;
-				}
-				return {
-					payload: jsonToPayload({
-						blockNumber: blockNumber.toString(),
-						blockHash: block.hash,
-						parentHash: block.parentHash,
-						timestamp: Number(block.timestamp),
-						transactionCount: block.transactions.length,
-						gasPrice: gasPrice.toString(),
-						gasUsed: block.gasUsed.toString(),
-						gasLimit: block.gasLimit.toString(),
-						baseFeePerGas: block.baseFeePerGas?.toString(),
-						miner: block.miner,
-						size: block.size.toString(),
-					}),
-					annotations: [
-						{
-							key: "project",
-							value: "InfuraDemo",
-						},
-						{
-							key: "InfuraDemo_blockNumber",
-							value: block.number?.toString() ?? "",
-						},
-						{
-							key: "InfuraDemo_blockHash",
-							value: block.hash ?? "",
-						},
-						{
-							key: "InfuraDemo_blockGasPrice",
-							value: Number(gasPrice),
-						},
-						{
-							key: "InfuraDemo_blockTimestamp",
-							value: Number(block.timestamp),
-						},
-						{
-							key: "InfuraDemo_version",
-							value: DATA_VERSION,
-						},
-					],
-					expiresIn: MONTH_IN_SECONDS,
-				};
-			}),
-		});
+	let latestEthBlockNumber = 0n;
+	const receipt = await arkivClient.mutateEntities({
+		creates: blocks.map((block) => {
+			const blockNumber = block.number ?? 0n;
+			if (blockNumber > latestEthBlockNumber) {
+				latestEthBlockNumber = blockNumber;
+			}
+			return {
+				payload: jsonToPayload({
+					blockNumber: blockNumber.toString(),
+					blockHash: block.hash,
+					parentHash: block.parentHash,
+					timestamp: Number(block.timestamp),
+					transactionCount: block.transactions.length,
+					gasPrice: gasPrice.toString(),
+					gasUsed: block.gasUsed.toString(),
+					gasLimit: block.gasLimit.toString(),
+					baseFeePerGas: block.baseFeePerGas?.toString(),
+					miner: block.miner,
+					size: block.size.toString(),
+				}),
+				annotations: [
+					{
+						key: "project",
+						value: "InfuraDemo",
+					},
+					{
+						key: "InfuraDemo_blockNumber",
+						value: block.number?.toString() ?? "",
+					},
+					{
+						key: "InfuraDemo_blockHash",
+						value: block.hash ?? "",
+					},
+					{
+						key: "InfuraDemo_blockGasPrice",
+						value: Number(gasPrice),
+					},
+					{
+						key: "InfuraDemo_blockTimestamp",
+						value: Number(block.timestamp),
+					},
+					{
+						key: "InfuraDemo_dataType",
+						value: "blockdata",
+					},
+					{
+						key: "InfuraDemo_version",
+						value: DATA_VERSION,
+					},
+				],
+				expiresIn: MONTH_IN_SECONDS,
+			};
+		}),
+	});
 
-		console.info("Blocks stored successfully:", receipt);
-		console.info("Latest Ethereum block number:", latestEthBlockNumber);
+	console.info("Blocks stored successfully:", receipt);
+	console.info("Latest Ethereum block number:", latestEthBlockNumber);
 
-		// Store latest block number if it is higher than the latest block number in Arkiv
-		const latestBlockNumber = await getLatestBlockNumber();
-		if (latestBlockNumber && latestEthBlockNumber > latestBlockNumber) {
-			await updateLatestBlockNumber(latestEthBlockNumber);
-		} else if (!latestBlockNumber && latestEthBlockNumber) {
-			await storeLatestBlockNumber(latestEthBlockNumber);
-		}
-	} catch (error) {
-		console.error("Error in storeBlock:", error);
+	// Store latest block number if it is higher than the latest block number in Arkiv
+	const latestBlockNumber = await getLatestBlockNumber();
+	if (latestBlockNumber && latestEthBlockNumber > latestBlockNumber) {
+		await updateLatestBlockNumber(latestEthBlockNumber);
+	} else if (!latestBlockNumber && latestEthBlockNumber) {
+		await storeLatestBlockNumber(latestEthBlockNumber);
 	}
 }
 
@@ -190,18 +193,14 @@ export async function getBlock(blockNumber?: number): Promise<Entity | null> {
 			.buildQuery()
 			.ownedBy(storeOwnerAddress)
 			.limit(1)
-			.withPayload();
+			.withPayload()
+			.where([
+				eq("project", "InfuraDemo"),
+				eq("InfuraDemo_dataType", "blockdata"),
+				eq("InfuraDemo_version", DATA_VERSION),
+			]);
 		if (blockNumber) {
-			query.where([
-				eq("project", "InfuraDemo"),
-				eq("InfuraDemo_blockNumber", blockNumber.toString()),
-				eq("InfuraDemo_version", DATA_VERSION),
-			]);
-		} else {
-			query.where([
-				eq("project", "InfuraDemo"),
-				eq("InfuraDemo_version", DATA_VERSION),
-			]);
+			query.where([eq("InfuraDemo_blockNumber", blockNumber.toString())]);
 		}
 		const result = await query.fetch();
 		console.debug("result from query", result);
@@ -210,4 +209,55 @@ export async function getBlock(blockNumber?: number): Promise<Entity | null> {
 		console.error("Error in getBlock:", error);
 		return null;
 	}
+}
+
+export async function getBlocksSinceTimestamp(
+	timestamp: number,
+): Promise<BlockSchema[]> {
+	const query = await arkivClient
+		.buildQuery()
+		.where([
+			eq("project", "InfuraDemo"),
+			gt("InfuraDemo_blockTimestamp", timestamp),
+			eq("InfuraDemo_dataType", "blockdata"),
+			eq("InfuraDemo_version", DATA_VERSION),
+		])
+		.withPayload();
+	const result = await query.fetch();
+	return result.entities.map((entity) => blockSchema.parse(entity.toJson()));
+}
+
+export async function storeAggregatedData(
+	aggregatedData: AggregatedDataSchema,
+	timestamp: number,
+	aggType: "hourly" | "daily",
+) {
+	const receipt = await arkivClient.createEntity({
+		expiresIn: aggType === "hourly" ? WEEK_IN_SECONDS : MONTH_IN_SECONDS,
+		payload: jsonToPayload({
+			avgTransactionCount: aggregatedData.avgTransactionCount,
+			avgGasPrice: aggregatedData.avgGasPrice.toString(),
+		}),
+		annotations: [
+			{
+				key: "project",
+				value: "InfuraDemo",
+			},
+			{
+				key: "InfuraDemo_dataType",
+				value: "stats",
+			},
+			{
+				key: "InfuraDemo_statsTimestamp",
+				value: timestamp,
+			},
+			{
+				key: "InfuraDemo_version",
+				value: DATA_VERSION,
+			},
+		],
+	});
+	console.debug("Aggregated data stored successfully:", receipt);
+
+	return receipt;
 }

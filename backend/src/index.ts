@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { aggregateDataLastHour } from "./aggregate";
 import { getLatestBlockNumber, storeBlocks } from "./arkiv";
 import { getBlock as getBlockOnEth, getGasPrice } from "./eth";
 
@@ -48,7 +49,7 @@ app.get("/collectData", async (c) => {
 				done = true;
 			} else {
 				latestBlockOnEth = await getBlockOnEth(latestBlockOnEth.parentHash);
-				console.info("Get parent block to store next", latestBlockOnEth);
+				console.info("Get parent block to store next", latestBlockOnEth.number);
 			}
 		}
 		await storeBlocks(blocksToStore, gasPrice);
@@ -75,9 +76,13 @@ app.get("/collectData", async (c) => {
 // aggregateData endpoint
 app.get("/aggregateData", async (c) => {
 	try {
+		const aggregatedData = await aggregateDataLastHour();
 		return c.json({
 			success: true,
-			data: "Aggregated data",
+			data: {
+				avgTransactionCount: aggregatedData.avgTransactionCount,
+				avgGasPrice: aggregatedData.avgGasPrice.toString(),
+			},
 		});
 	} catch (error) {
 		console.error("Error in aggregateData:", error);

@@ -5,6 +5,10 @@
 		{
 			"path": "/collectData",
 			"schedule": "* * * * *"
+		},
+		{
+			"path": "/aggregateData",
+			"schedule": "0 * * * *"
 		}
 	]
 }
