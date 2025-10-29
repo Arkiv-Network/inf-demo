@@ -3,6 +3,10 @@ const dateTimeFormatter = new Intl.DateTimeFormat(undefined, {
   timeStyle: "short",
 });
 
-export function formatTimestamp(iso: string) {
-  return dateTimeFormatter.format(new Date(iso));
+export function formatTimestamp(timestamp: number | string) {
+  // If timestamp is a Unix timestamp (number or numeric string), convert to milliseconds
+  const numericTimestamp =
+    typeof timestamp === "string" ? parseInt(timestamp, 10) : timestamp;
+  const date = new Date(numericTimestamp * 1000);
+  return dateTimeFormatter.format(date);
 }

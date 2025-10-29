@@ -1,6 +1,5 @@
 import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 
-import { MOCK_BLOCK_DETAILS } from "../data/mock-blocks";
 import type { BlockDetail } from "../types";
 
 export function useBlockDetails(
@@ -14,14 +13,7 @@ export function useBlockDetails(
         throw new Error("A block number is required to fetch details");
       }
 
-      const block = MOCK_BLOCK_DETAILS.find(
-        (item) => item.number === blockNumber
-      );
-      if (!block) {
-        throw new Error(`Block #${blockNumber.toLocaleString()} not found`);
-      }
-
-      return block;
+      throw new Error(`Block #${blockNumber.toLocaleString()} not found`);
     },
   });
 }

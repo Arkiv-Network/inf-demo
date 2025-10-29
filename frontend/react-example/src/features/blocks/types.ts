@@ -1,17 +1,17 @@
-export type BlockSummary = {
-  number: number;
-  hash: string;
-  parentHash: string;
-  timestamp: string;
-  miner: string;
-  transactionCount: number;
-  gasUsed: number;
-  gasLimit: number;
-  baseFeePerGasGwei: number;
-};
+import * as z from "zod/v4";
 
-export type BlockDetail = BlockSummary & {
-  sizeBytes: number;
-  rewardEth: number;
-  uncleCount: number;
-};
+export const BlockDetailSchema = z.object({
+  arkivEntityKey: z.string(),
+  blockNumber: z.string(),
+  blockHash: z.string(),
+  parentHash: z.string(),
+  timestamp: z.number(),
+  miner: z.string(),
+  transactionCount: z.number(),
+  gasUsed: z.string(),
+  gasLimit: z.string(),
+  baseFeePerGas: z.string(),
+  size: z.string(),
+});
+
+export type BlockDetail = z.infer<typeof BlockDetailSchema>;

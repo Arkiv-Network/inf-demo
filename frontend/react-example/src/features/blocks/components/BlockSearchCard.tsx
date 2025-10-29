@@ -14,13 +14,8 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 import { useBlockDetails } from "../hooks/useBlockDetails";
-import { formatTimestamp } from "../helpers/formatTimestamp";
 
 import type { FormEvent } from "react";
-
-const formatter = new Intl.NumberFormat(undefined, {
-  maximumFractionDigits: 3,
-});
 
 type BlockSearchCardProps = {
   className?: string;
@@ -43,22 +38,18 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
     }
 
     const items: FieldDescriptor[] = [
-      { label: "Timestamp", value: formatTimestamp(data.timestamp) },
+      { label: "Timestamp", value: String(data.timestamp) },
       {
         label: "Miner",
         value: `${data.miner.slice(0, 10)}…${data.miner.slice(-8)}`,
       },
       {
         label: "Base Fee (Gwei)",
-        value: formatter.format(data.baseFeePerGasGwei),
+        value: data.baseFeePerGas,
       },
       {
         label: "Gas Used",
-        value: `${formatter.format((data.gasUsed / data.gasLimit) * 100)}%`,
-      },
-      {
-        label: "Reward (ETH)",
-        value: formatter.format(data.rewardEth),
+        value: data.gasUsed.toLocaleString(),
       },
       {
         label: "Tx Count",
@@ -66,7 +57,7 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
       },
       {
         label: "Size",
-        value: `${(data.sizeBytes / 1024).toFixed(1)} KB`,
+        value: `${(Number(data.size) / 1024).toFixed(1)} KB`,
       },
       {
         label: "Parent Hash",
@@ -150,7 +141,7 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-muted-foreground">Block Number</span>
                 <span className="font-mono text-lg font-semibold">
-                  #{data.number.toLocaleString()}
+                  #{data.blockNumber.toLocaleString()}
                 </span>
               </div>
               <dl className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
