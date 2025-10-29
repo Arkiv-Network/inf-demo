@@ -18,7 +18,7 @@ app.get("/", (c) => {
 });
 
 // collectData endpoint
-app.post("/collectData", async (c) => {
+app.get("/collectData", async (c) => {
 	try {
 		let latestBlockOnEth = await getBlockOnEth();
 		const latestBlockNumberOnArkiv = await getLatestBlockNumber();
