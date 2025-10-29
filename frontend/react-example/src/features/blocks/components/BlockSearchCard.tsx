@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { AlertCircle, ChevronRight } from "lucide-react";
+import { AlertCircle, ChevronRight, ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { useBlockDetails } from "../hooks/useBlockDetails";
 
 import type { FormEvent } from "react";
+import * as z from "zod/v4";
 
 type BlockSearchCardProps = {
   className?: string;
@@ -23,12 +24,24 @@ type BlockSearchCardProps = {
 
 type FieldDescriptor = {
   label: string;
-  value: string;
+  value: string | number;
+  linkTo?: string;
 };
+
+const BlockNumberStringSchema = z.string().refine((val) => {
+  const parsed = Number(val);
+  return (
+    !Number.isNaN(parsed) &&
+    Number.isFinite(parsed) &&
+    parsed >= 0 &&
+    val.trim() !== ""
+  );
+}, "Invalid block number");
 
 export function BlockSearchCard({ className }: BlockSearchCardProps) {
   const [inputValue, setInputValue] = useState("");
-  const [searchNumber, setSearchNumber] = useState<number | null>(21_000_950);
+  const [searchNumber, setSearchNumber] = useState<string | null>("23682073");
+  const [formError, setFormError] = useState<string | null>(null);
 
   const { data, isPending, isError, error } = useBlockDetails(searchNumber);
 
@@ -41,15 +54,16 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
       { label: "Timestamp", value: String(data.timestamp) },
       {
         label: "Miner",
-        value: `${data.miner.slice(0, 10)}…${data.miner.slice(-8)}`,
+        value: `${data.miner.slice(0, 8)}…${data.miner.slice(-6)}`,
+        linkTo: `https://etherscan.io/address/${data.miner}`,
       },
       {
         label: "Base Fee (Gwei)",
-        value: data.baseFeePerGas,
+        value: Number(data.baseFeePerGas) / 1_000_000_000, // wei -> gwei
       },
       {
         label: "Gas Used",
-        value: data.gasUsed.toLocaleString(),
+        value: Number(data.gasUsed).toLocaleString(),
       },
       {
         label: "Tx Count",
@@ -61,7 +75,14 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
       },
       {
         label: "Parent Hash",
-        value: `${data.parentHash.slice(0, 12)}…${data.parentHash.slice(-6)}`,
+        value: `${data.parentHash.slice(0, 8)}…${data.parentHash.slice(-6)}`,
+      },
+      {
+        label: "Arkiv Entity",
+        value: `${data.arkivEntityKey.slice(0, 8)}…${data.arkivEntityKey.slice(
+          -6
+        )}`,
+        linkTo: `https://explorer.infurademo.hoodi.arkiv.network/entity/${data.arkivEntityKey}?tab=data`,
       },
     ];
 
@@ -70,19 +91,23 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setFormError(null);
     const trimmed = inputValue.trim();
     if (!trimmed) {
+      setFormError("Please enter a block number");
       setSearchNumber(null);
       return;
     }
 
-    const parsed = Number(trimmed);
-    if (Number.isNaN(parsed) || !Number.isFinite(parsed) || parsed < 0) {
+    const parseResult = BlockNumberStringSchema.safeParse(trimmed);
+    if (parseResult.success) {
+      setSearchNumber(parseResult.data);
+    } else {
+      setFormError(
+        parseResult.error.issues[0]?.message || "Invalid block number"
+      );
       setSearchNumber(null);
-      return;
     }
-
-    setSearchNumber(Math.floor(parsed));
   }
 
   return (
@@ -97,8 +122,7 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
           <div>
             <CardTitle className="text-xl">Block Explorer</CardTitle>
             <CardDescription>
-              Search by block number to inspect gas usage, miner payouts, and
-              more.
+              Search for Ethereum block details by block number.
             </CardDescription>
           </div>
         </div>
@@ -109,26 +133,33 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
           onSubmit={handleSubmit}
           role="search"
         >
-          <Input
-            aria-label="Block number"
-            inputMode="numeric"
-            className="border-violet-200/70 bg-white/80"
-            placeholder="Enter block number"
-            value={inputValue}
-            onChange={(event) => setInputValue(event.target.value)}
-          />
-          <Button type="submit" className="shrink-0">
-            Search
-            <ChevronRight className="size-4" />
-          </Button>
+          <div className="flex flex-col w-full ">
+            <div className="flex items-center gap-2">
+              <Input
+                aria-label="Block number"
+                inputMode="numeric"
+                className="border-violet-200/70 bg-white/80"
+                placeholder="Enter block number"
+                value={inputValue}
+                onChange={(event) => setInputValue(event.target.value)}
+              />
+              <Button type="submit" className="shrink-0">
+                Search
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+            {formError && (
+              <p className="mt-1 text-sm text-destructive">{formError}</p>
+            )}
+          </div>
         </form>
         <div className="mt-6 space-y-4">
-          {isPending ? (
+          {!searchNumber ? null : isPending ? (
             <div className="flex min-h-36 items-center justify-center text-sm text-muted-foreground">
               Looking up block details...
             </div>
           ) : isError ? (
-            <div className="flex min-h-36 items-center gap-2 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <div className="flex items-center gap-2 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               <AlertCircle className="size-4" />
               <span>
                 {error instanceof Error
@@ -154,7 +185,19 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
                       {item.label}
                     </dt>
                     <dd className="font-medium text-sm break-all text-slate-900">
-                      {item.value}
+                      {item.linkTo ? (
+                        <a
+                          href={item.linkTo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sky-700 hover:text-sky-900 inline-flex items-center justify-center gap-1"
+                        >
+                          {item.value}
+                          <ExternalLink className="size-4" />
+                        </a>
+                      ) : (
+                        item.value
+                      )}
                     </dd>
                   </div>
                 ))}
