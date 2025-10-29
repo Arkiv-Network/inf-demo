@@ -6,6 +6,7 @@ import { TransactionHeatmapCard } from "@/features/transactions/components/Trans
 import { TransactionHistoryCard } from "@/features/transactions/components/TransactionHistoryCard";
 import { LatestBlockHighlight } from "./features/blocks/components/LatestBlockHighlight";
 import { HighlightCard } from "./components/HighlightCard";
+import CurrentGasPriceHighlight from "./features/gas-price/components/CurrentGasPriceHighlight";
 
 function App() {
   return (
@@ -37,7 +38,7 @@ function App() {
                 <LatestBlockHighlight />
                 <HighlightCard title="Avg gas (30d)" value="24.8 Gwei" />
                 <HighlightCard title="Transactions" value="1.02M / day" />
-                <HighlightCard title="Current gas price" value="24.8 Gwei" />
+                <CurrentGasPriceHighlight />
               </div>
             </div>
           </div>

@@ -32,7 +32,7 @@ export function useBlockDetails(
       }
       return BlockDetailSchema.parse({
         arkivEntityKey: entity.key,
-        ...JSON.parse(new TextDecoder().decode(entity.payload)),
+        ...entity.toJson(),
       });
     },
   });

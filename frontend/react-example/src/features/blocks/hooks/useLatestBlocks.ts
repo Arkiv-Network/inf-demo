@@ -32,9 +32,7 @@ export function useLatestBlocks() {
         // one entity marked as latestBlockNumber. We take the highest block number in that case.
         latestBlockNumber = Math.max(
           ...lastBlock.entities.map((entity) => {
-            const parsed = LatestBlockSchema.parse(
-              JSON.parse(new TextDecoder().decode(entity.payload))
-            );
+            const parsed = LatestBlockSchema.parse(JSON.parse(entity.toText()));
             return parsed;
           })
         );
@@ -71,8 +69,8 @@ export function useLatestBlocks() {
         .map((entity) => {
           try {
             return BlockDetailSchema.parse({
-              ...JSON.parse(new TextDecoder().decode(entity.payload)),
               arkivEntityKey: entity.key,
+              ...entity.toJson(),
             });
           } catch (err) {
             console.error(

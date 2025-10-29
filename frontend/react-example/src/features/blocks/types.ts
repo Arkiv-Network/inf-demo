@@ -8,6 +8,7 @@ export const BlockDetailSchema = z.object({
   timestamp: z.number(),
   miner: z.string(),
   transactionCount: z.number(),
+  gasPrice: z.string(),
   gasUsed: z.string(),
   gasLimit: z.string(),
   baseFeePerGas: z.string(),
