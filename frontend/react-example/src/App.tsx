@@ -4,6 +4,8 @@ import { GasPriceHeatmapCard } from "@/features/gas-price/components/GasPriceHea
 import { GasPriceTrendCard } from "@/features/gas-price/components/GasPriceTrendCard";
 import { TransactionHeatmapCard } from "@/features/transactions/components/TransactionHeatmapCard";
 import { TransactionHistoryCard } from "@/features/transactions/components/TransactionHistoryCard";
+import { LatestBlockHighlight } from "./features/blocks/components/LatestBlockHighlight";
+import { HighlightCard } from "./components/HighlightCard";
 
 function App() {
   return (
@@ -32,38 +34,10 @@ function App() {
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl border border-white/15 bg-white/10 p-5 shadow-lg shadow-slate-900/40 backdrop-blur">
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-white/60">
-                    Latest block
-                  </p>
-                  <p className="mt-3 text-2xl font-semibold text-white">
-                    #21,000,950
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/15 bg-white/10 p-5 shadow-lg shadow-slate-900/40 backdrop-blur">
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-white/60">
-                    Avg gas (30d)
-                  </p>
-                  <p className="mt-3 text-2xl font-semibold text-white">
-                    24.8 Gwei
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/15 bg-white/10 p-5 shadow-lg shadow-slate-900/40 backdrop-blur">
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-white/60">
-                    Transactions
-                  </p>
-                  <p className="mt-3 text-2xl font-semibold text-white">
-                    1.02M / day
-                  </p>
-                </div>
-                <div className="rounded-2xl border border-white/15 bg-white/10 p-5 shadow-lg shadow-slate-900/40 backdrop-blur">
-                  <p className="text-[0.65rem] font-semibold uppercase tracking-[0.4em] text-white/60">
-                    Current gas price
-                  </p>
-                  <p className="mt-3 text-2xl font-semibold text-white">
-                    24.8 Gwei
-                  </p>
-                </div>
+                <LatestBlockHighlight />
+                <HighlightCard title="Avg gas (30d)" value="24.8 Gwei" />
+                <HighlightCard title="Transactions" value="1.02M / day" />
+                <HighlightCard title="Current gas price" value="24.8 Gwei" />
               </div>
             </div>
           </div>
