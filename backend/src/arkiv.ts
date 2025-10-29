@@ -11,6 +11,7 @@ import type { Block, Chain } from "viem";
 import { defineChain } from "viem";
 
 const MONTH_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
+const DATA_VERSION = "0.1";
 
 const chains = {
 	kaolin: kaolin,
@@ -51,6 +52,10 @@ async function storeLatestBlockNumber(blockNumber: bigint) {
 				key: "InfuraDemo_data",
 				value: "latestBlockNumber",
 			},
+			{
+				key: "InfuraDemo_version",
+				value: DATA_VERSION,
+			},
 		],
 	});
 }
@@ -73,6 +78,10 @@ async function updateLatestBlockNumber(blockNumber: bigint) {
 				key: "InfuraDemo_data",
 				value: "latestBlockNumber",
 			},
+			{
+				key: "InfuraDemo_version",
+				value: DATA_VERSION,
+			},
 		],
 	});
 }
@@ -82,6 +91,7 @@ async function getLatestBlockNumberEntity(): Promise<Entity | null> {
 		.where([
 			eq("project", "InfuraDemo"),
 			eq("InfuraDemo_data", "latestBlockNumber"),
+			eq("InfuraDemo_version", DATA_VERSION),
 		])
 		.limit(1)
 		.withPayload()
@@ -89,58 +99,68 @@ async function getLatestBlockNumberEntity(): Promise<Entity | null> {
 	return result.entities.length > 0 ? result.entities[0] : null;
 }
 
-export async function storeBlock(block: Block, gasPrice: bigint) {
+export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 	try {
-		const receipt = await arkivClient.createEntity({
-			payload: jsonToPayload({
-				blockNumber: block.number?.toString(),
-				blockHash: block.hash,
-				parentHash: block.parentHash,
-				timestamp: Number(block.timestamp / 1000n), // convert to seconds
-				transactionCount: block.transactions.length,
-				gasPrice: gasPrice.toString(),
-				gasUsed: block.gasUsed.toString(),
-				gasLimit: block.gasLimit.toString(),
-				baseFeePerGas: block.baseFeePerGas?.toString(),
-				miner: block.miner,
-				size: block.size.toString(),
+		let latestEthBlockNumber = 0n;
+		const receipt = await arkivClient.mutateEntities({
+			creates: blocks.map((block) => {
+				const blockNumber = block.number?.toString();
+				if (blockNumber && BigInt(blockNumber) > latestEthBlockNumber) {
+					latestEthBlockNumber = BigInt(blockNumber);
+				}
+				return {
+					payload: jsonToPayload({
+						blockNumber: blockNumber,
+						blockHash: block.hash,
+						parentHash: block.parentHash,
+						timestamp: Number(block.timestamp / 1000n), // convert to seconds
+						transactionCount: block.transactions.length,
+						gasPrice: gasPrice.toString(),
+						gasUsed: block.gasUsed.toString(),
+						gasLimit: block.gasLimit.toString(),
+						baseFeePerGas: block.baseFeePerGas?.toString(),
+						miner: block.miner,
+						size: block.size.toString(),
+					}),
+					annotations: [
+						{
+							key: "project",
+							value: "InfuraDemo",
+						},
+						{
+							key: "InfuraDemo_blockNumber",
+							value: block.number?.toString() ?? "",
+						},
+						{
+							key: "InfuraDemo_blockHash",
+							value: block.hash ?? "",
+						},
+						{
+							key: "InfuraDemo_blockGasPrice",
+							value: Number(gasPrice),
+						},
+						{
+							key: "InfuraDemo_blockTimestamp",
+							value: Number(block.timestamp / 1000n), // convert to seconds
+						},
+						{
+							key: "InfuraDemo_version",
+							value: DATA_VERSION,
+						},
+					],
+					expiresIn: MONTH_IN_SECONDS,
+				};
 			}),
-			annotations: [
-				{
-					key: "project",
-					value: "InfuraDemo",
-				},
-				{
-					key: "InfuraDemo_blockNumber",
-					value: block.number?.toString() ?? "",
-				},
-				{
-					key: "InfuraDemo_blockHash",
-					value: block.hash ?? "",
-				},
-				{
-					key: "InfuraDemo_blockGasPrice",
-					value: Number(gasPrice),
-				},
-				{
-					key: "InfuraDemo_blockTimestamp",
-					value: Number(block.timestamp / 1000n), // convert to seconds
-				},
-				{
-					key: "InfuraDemo_version",
-					value: "0.1",
-				},
-			],
-			expiresIn: MONTH_IN_SECONDS,
 		});
-		console.info("Block stored successfully:", receipt);
+
+		console.info("Blocks stored successfully:", receipt);
 
 		// Store latest block number if it is higher than the latest block number in Arkiv
 		const latestBlockNumber = await getLatestBlockNumber();
-		if (latestBlockNumber && block.number && block.number > latestBlockNumber) {
-			await updateLatestBlockNumber(block.number);
-		} else if (!latestBlockNumber && block.number) {
-			await storeLatestBlockNumber(block.number);
+		if (latestBlockNumber && latestEthBlockNumber > latestBlockNumber) {
+			await updateLatestBlockNumber(latestEthBlockNumber);
+		} else if (!latestBlockNumber && latestEthBlockNumber) {
+			await storeLatestBlockNumber(latestEthBlockNumber);
 		}
 	} catch (error) {
 		console.error("Error in storeBlock:", error);
@@ -168,9 +188,13 @@ export async function getBlock(blockNumber?: number): Promise<Entity | null> {
 			query.where([
 				eq("project", "InfuraDemo"),
 				eq("InfuraDemo_blockNumber", blockNumber.toString()),
+				eq("InfuraDemo_version", DATA_VERSION),
 			]);
 		} else {
-			query.where([eq("project", "InfuraDemo")]);
+			query.where([
+				eq("project", "InfuraDemo"),
+				eq("InfuraDemo_version", DATA_VERSION),
+			]);
 		}
 		const result = await query.fetch();
 		console.debug("result from query", result);

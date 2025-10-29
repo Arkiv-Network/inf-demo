@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { getLatestBlockNumber, storeBlock } from "./arkiv";
+import { getLatestBlockNumber, storeBlocks } from "./arkiv";
 import { getBlock as getBlockOnEth, getGasPrice } from "./eth";
 
 const app = new Hono();
@@ -37,9 +37,10 @@ app.post("/collectData", async (c) => {
 			"Filling missed blocks between latestBlockOnEth and latestBlockOnArkiv",
 		);
 		let done = latestBlockOnEth.number === latestBlockNumberOnArkiv;
+		const blocksToStore = [];
 		while (!done) {
-			await storeBlock(latestBlockOnEth, gasPrice);
-			console.info("Block stored successfully:", latestBlockOnEth.number);
+			blocksToStore.push(latestBlockOnEth);
+			console.info("Block to store added:", latestBlockOnEth.number);
 			if (
 				!latestBlockNumberOnArkiv ||
 				latestBlockOnEth.number - 1n === latestBlockNumberOnArkiv
@@ -50,6 +51,11 @@ app.post("/collectData", async (c) => {
 				console.info("Get parent block to store next", latestBlockOnEth);
 			}
 		}
+		await storeBlocks(blocksToStore, gasPrice);
+		console.info(
+			"Blocks stored successfully. Amount of blocks stored:",
+			blocksToStore.length,
+		);
 
 		return c.json({
 			success: true,
