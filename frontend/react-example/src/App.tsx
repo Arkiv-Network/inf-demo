@@ -14,7 +14,7 @@ function App() {
       <header className="relative overflow-hidden bg-linear-to-br from-slate-950 via-indigo-950 to-purple-800 pb-40 pt-12 text-white shadow-2xl shadow-indigo-950/40">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.25),transparent_60%)]" />
         <div className="pointer-events-none absolute inset-x-0 -bottom-40 h-72 bg-linear-to-b from-white/20 via-white/8 to-transparent blur-3xl" />
-        <div className="relative z-10 mx-auto max-w-[1600px] px-6 sm:px-10">
+        <div className="relative z-10 mx-auto max-w-[1600px] px-3 sm:px-10">
           <div className="flex flex-col gap-10">
             <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] md:items-center">
               <div className="space-y-6">
@@ -46,7 +46,7 @@ function App() {
       </header>
 
       <div className="relative z-20 -mt-24 pb-20">
-        <div className="mx-auto w-full max-w-[1600px] space-y-16 px-6 text-foreground sm:px-10 lg:px-16 xl:space-y-20">
+        <div className="mx-auto w-full max-w-[1600px] space-y-16 px-3 text-foreground sm:px-10 lg:px-16 xl:space-y-20">
           <main className="grid gap-12 xl:gap-14" id="overview">
             <section className="grid gap-6 xl:grid-cols-12" id="blocks">
               <LatestBlocksCard className="xl:col-span-8" />

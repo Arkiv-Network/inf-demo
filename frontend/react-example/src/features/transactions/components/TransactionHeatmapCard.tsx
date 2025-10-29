@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import {
   Card,
@@ -28,32 +28,107 @@ type TransactionHeatmapCardProps = {
   className?: string;
 };
 
+type DaySummary = {
+  min: number;
+  max: number;
+  avg: number;
+};
+
 export function TransactionHeatmapCard({
   className,
 }: TransactionHeatmapCardProps) {
   const { data, isPending, isError, error } = useTransactionHeatmap();
 
-  const { days, cellLookup, maxValue } = useMemo(() => {
+  const { days, cellLookup, maxValue, minValue, daySummaries } = useMemo(() => {
     if (!data?.length) {
       return {
         days: [] as string[],
         cellLookup: new Map<string, number>(),
         maxValue: 0,
+        minValue: 0,
+        daySummaries: {} as Record<string, DaySummary>,
       };
     }
 
     const orderedDays = Array.from(new Set(data.map((point) => point.day)));
     const lookup = new Map<string, number>();
     let max = 0;
+    let min = Number.POSITIVE_INFINITY;
+    const summaries = new Map<
+      string,
+      { min: number; max: number; total: number; count: number }
+    >();
 
     for (const point of data) {
       const key = `${point.day}-${point.hour}`;
       lookup.set(key, point.transactionCount);
       max = Math.max(max, point.transactionCount);
+      min = Math.min(min, point.transactionCount);
+
+      const summary = summaries.get(point.day) ?? {
+        min: Number.POSITIVE_INFINITY,
+        max: Number.NEGATIVE_INFINITY,
+        total: 0,
+        count: 0,
+      };
+
+      summary.min = Math.min(summary.min, point.transactionCount);
+      summary.max = Math.max(summary.max, point.transactionCount);
+      summary.total += point.transactionCount;
+      summary.count += 1;
+
+      summaries.set(point.day, summary);
     }
 
-    return { days: orderedDays, cellLookup: lookup, maxValue: max };
+    const daySummaries: Record<string, DaySummary> = Object.fromEntries(
+      orderedDays.map((day) => {
+        const summary = summaries.get(day);
+        if (!summary) {
+          return [day, { min: 0, max: 0, avg: 0 }];
+        }
+        return [
+          day,
+          {
+            min: summary.min === Number.POSITIVE_INFINITY ? 0 : summary.min,
+            max: summary.max === Number.NEGATIVE_INFINITY ? 0 : summary.max,
+            avg: summary.count ? summary.total / summary.count : 0,
+          },
+        ];
+      })
+    );
+
+    return {
+      days: orderedDays,
+      cellLookup: lookup,
+      maxValue: max,
+      minValue: min === Number.POSITIVE_INFINITY ? 0 : min,
+      daySummaries,
+    };
   }, [data]);
+
+  const [selectedDay, setSelectedDay] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!days.length) {
+      setSelectedDay(null);
+      return;
+    }
+
+    const fallbackDay = days[days.length - 1] ?? null;
+
+    setSelectedDay((current) =>
+      current && fallbackDay && days.includes(current) ? current : fallbackDay
+    );
+  }, [days]);
+
+  const activeDay =
+    selectedDay && days.includes(selectedDay)
+      ? selectedDay
+      : days[days.length - 1] ?? null;
+  const activeSummary = activeDay ? daySummaries[activeDay] : undefined;
+  const activeDayLabel = activeDay
+    ? dayFormatter.format(new Date(`${activeDay}T00:00:00`))
+    : "";
 
   function getCellValue(day: string, hour: number) {
     return cellLookup.get(`${day}-${hour}`) ?? 0;
@@ -77,6 +152,14 @@ export function TransactionHeatmapCard({
 
     return { backgroundColor, color, borderColor };
   }
+
+  const minDisplay = activeSummary ? activeSummary.min.toLocaleString() : "--";
+  const maxDisplay = activeSummary ? activeSummary.max.toLocaleString() : "--";
+  const avgDisplay = activeSummary
+    ? Math.round(activeSummary.avg).toLocaleString()
+    : "--";
+  const overallMinDisplay = minValue.toLocaleString();
+  const overallMaxDisplay = maxValue.toLocaleString();
 
   return (
     <Card
@@ -116,12 +199,44 @@ export function TransactionHeatmapCard({
         ) : (
           <div className="space-y-4 text-xs">
             <div className="flex flex-wrap items-center justify-between gap-3 text-slate-600">
-              <span>
-                Peak throughput: <strong>{maxValue.toLocaleString()}</strong>{" "}
-                tx/h
+              <span className="md:hidden">
+                {activeDay ? (
+                  <>
+                    Hourly throughput for <strong>{activeDayLabel}</strong>:{" "}
+                    <strong>{minDisplay}</strong> –{" "}
+                    <strong>{maxDisplay}</strong> tx/h
+                  </>
+                ) : (
+                  "Select a day to inspect hourly throughput."
+                )}
+              </span>
+              <span className="hidden md:inline">
+                Weekly hourly range: <strong>{overallMinDisplay}</strong> –{" "}
+                <strong>{overallMaxDisplay}</strong> tx/h
               </span>
             </div>
-            <div>
+            <div className="flex flex-wrap gap-2 md:hidden">
+              {days.map((day) => {
+                const label = dayFormatter.format(new Date(`${day}T00:00:00`));
+                const isActive = day === activeDay;
+                return (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => setSelectedDay(day)}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/60 focus-visible:ring-offset-2",
+                      isActive
+                        ? "border-sky-500 bg-sky-600 text-white shadow"
+                        : "border-sky-200 bg-white/75 text-sky-700 hover:bg-sky-50"
+                    )}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="hidden md:block">
               <div className="overflow-x-auto">
                 <table className="w-full border-separate border-spacing-0 text-center text-[0.78rem] font-medium text-slate-700">
                   <thead>
@@ -129,14 +244,19 @@ export function TransactionHeatmapCard({
                       <th className="border-b border-sky-200/70 pe-3 pb-2 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                         Hour
                       </th>
-                      {days.map((day) => (
-                        <th
-                          key={day}
-                          className="border-b border-sky-200/70 px-2 pb-2 text-xs font-semibold text-slate-600"
-                        >
-                          {dayFormatter.format(new Date(`${day}T00:00:00`))}
-                        </th>
-                      ))}
+                      {days.map((day) => {
+                        const label = dayFormatter.format(
+                          new Date(`${day}T00:00:00`)
+                        );
+                        return (
+                          <th
+                            key={day}
+                            className="border-b border-sky-200/70 px-2 pb-2 text-xs font-semibold text-slate-600"
+                          >
+                            {label}
+                          </th>
+                        );
+                      })}
                     </tr>
                   </thead>
                   <tbody>
@@ -148,16 +268,21 @@ export function TransactionHeatmapCard({
                         {days.map((day) => {
                           const value = getCellValue(day, hour);
                           const styles = getCellStyles(value);
+                          const dayLabel = dayFormatter.format(
+                            new Date(`${day}T00:00:00`)
+                          );
                           return (
                             <td
                               key={`${day}-${hour}`}
                               className="border border-sky-100/70 px-2 py-1.5 transition-colors"
-                              style={styles}
-                              title={`${dayFormatter.format(
-                                new Date(`${day}T00:00:00`)
-                              )} at ${formatHour(
+                              style={{
+                                backgroundColor: styles.backgroundColor,
+                                borderColor: styles.borderColor,
+                                color: styles.color,
+                              }}
+                              title={`${dayLabel} at ${formatHour(
                                 hour
-                              )}: ${value.toLocaleString()} transactions`}
+                              )}: ${value.toLocaleString()} tx`}
                             >
                               {value.toLocaleString()}
                             </td>
@@ -168,13 +293,64 @@ export function TransactionHeatmapCard({
                   </tbody>
                 </table>
               </div>
-              <div className="mt-5 flex items-center gap-3 text-[0.7rem] text-slate-600">
-                <span>Lower activity</span>
-                <div className="h-2 flex-1 rounded-full bg-linear-to-r from-sky-100 via-sky-300 to-sky-600" />
-                <span className="font-semibold text-slate-700">
-                  Higher activity
-                </span>
-              </div>
+            </div>
+            <div className="md:hidden space-y-3 text-sm text-slate-700">
+              {activeDay ? (
+                <section className="rounded-xl border border-sky-100 bg-white/75 p-4 shadow-sm shadow-sky-100/70">
+                  <header className="flex items-center justify-between text-[0.85rem] font-semibold">
+                    <span>{activeDayLabel}</span>
+                    <span className="text-xs font-semibold uppercase tracking-wide text-sky-600">
+                      {minDisplay} – {maxDisplay} tx
+                    </span>
+                  </header>
+                  <div className="mt-3">
+                    <div className="grid grid-cols-3 gap-1 text-[0.75rem] font-semibold ">
+                      {hours.map((hour) => {
+                        const value = getCellValue(activeDay, hour);
+                        const styles = getCellStyles(value);
+                        return (
+                          <div
+                            key={`${activeDay}-${hour}`}
+                            className="flex h-16 flex-col items-center justify-center gap-1 rounded border px-1 text-center"
+                            style={{
+                              backgroundColor: styles.backgroundColor,
+                              borderColor: styles.borderColor,
+                              color: styles.color,
+                            }}
+                            title={`${activeDayLabel} at ${formatHour(
+                              hour
+                            )}: ${value.toLocaleString()} tx`}
+                          >
+                            <span className="leading-none">
+                              {value.toLocaleString()}
+                            </span>
+                            <span className="text-[0.6rem] font-medium uppercase tracking-wide text-slate-600/80">
+                              {formatHour(hour)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <footer className="mt-3 flex items-center justify-between text-[0.7rem] text-slate-600">
+                    <span>Avg {avgDisplay} tx</span>
+                    <span className="uppercase tracking-wide text-sky-600">
+                      24 hrs
+                    </span>
+                  </footer>
+                </section>
+              ) : (
+                <div className="rounded-xl border border-sky-100 bg-white/75 p-4 text-sm text-slate-600">
+                  Select a day to view hourly data.
+                </div>
+              )}
+            </div>
+            <div className="mt-5 flex items-center gap-3 text-[0.7rem] text-slate-600">
+              <span>Lower activity</span>
+              <div className="h-2 flex-1 rounded-full bg-linear-to-r from-sky-100 via-sky-300 to-sky-600" />
+              <span className="font-semibold text-slate-700">
+                Higher activity
+              </span>
             </div>
           </div>
         )}
