@@ -7,12 +7,33 @@ import { privateKeyToAccount } from "@arkiv-network/sdk/accounts";
 import { kaolin, localhost } from "@arkiv-network/sdk/chains";
 import { eq } from "@arkiv-network/sdk/query";
 import { jsonToPayload, stringToPayload } from "@arkiv-network/sdk/utils";
-import type { Block } from "viem";
+import type { Block, Chain } from "viem";
+import { defineChain } from "viem";
 
 const MONTH_IN_SECONDS = 1000 * 60 * 60 * 24 * 30;
 
+const chains = {
+	kaolin: kaolin,
+	localhost: localhost,
+	infurademo: defineChain({
+		id: 60138453045,
+		name: "InfuraDemo",
+		network: "infurademo",
+		nativeCurrency: {
+			name: "Ethereum",
+			symbol: "ETH",
+			decimals: 18,
+		},
+		rpcUrls: {
+			default: {
+				http: ["https://infurademo.hoodi.arkiv.network/rpc"],
+			},
+		},
+	}),
+} as Record<string, Chain>;
+
 const arkivClient = createArkivClient({
-	chain: localhost,
+	chain: chains[process.env.ARKIV_CHAIN as keyof typeof chains],
 	transport: http(),
 	account: privateKeyToAccount(process.env.ARKIV_PRIVATE_KEY as `0x${string}`),
 });
