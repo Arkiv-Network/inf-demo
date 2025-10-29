@@ -11,7 +11,7 @@ import type { Block, Chain } from "viem";
 import { defineChain } from "viem";
 
 const MONTH_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
-const DATA_VERSION = "0.1";
+const DATA_VERSION = "0.2";
 
 const chains = {
 	kaolin: kaolin,
@@ -65,6 +65,12 @@ async function updateLatestBlockNumber(blockNumber: bigint) {
 	if (!latestBlockNumberEntity) {
 		throw new Error("Latest block number entity not found");
 	}
+	console.info(
+		"Updating latest block number:",
+		latestBlockNumberEntity.toText(),
+		"to:",
+		blockNumber,
+	);
 	await arkivClient.updateEntity({
 		entityKey: latestBlockNumberEntity.key,
 		expiresIn: MONTH_IN_SECONDS,
@@ -104,16 +110,16 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 		let latestEthBlockNumber = 0n;
 		const receipt = await arkivClient.mutateEntities({
 			creates: blocks.map((block) => {
-				const blockNumber = block.number?.toString();
-				if (blockNumber && BigInt(blockNumber) > latestEthBlockNumber) {
-					latestEthBlockNumber = BigInt(blockNumber);
+				const blockNumber = block.number ?? 0n;
+				if (blockNumber > latestEthBlockNumber) {
+					latestEthBlockNumber = blockNumber;
 				}
 				return {
 					payload: jsonToPayload({
-						blockNumber: blockNumber,
+						blockNumber: blockNumber.toString(),
 						blockHash: block.hash,
 						parentHash: block.parentHash,
-						timestamp: Number(block.timestamp / 1000n), // convert to seconds
+						timestamp: Number(block.timestamp),
 						transactionCount: block.transactions.length,
 						gasPrice: gasPrice.toString(),
 						gasUsed: block.gasUsed.toString(),
@@ -141,7 +147,7 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 						},
 						{
 							key: "InfuraDemo_blockTimestamp",
-							value: Number(block.timestamp / 1000n), // convert to seconds
+							value: Number(block.timestamp),
 						},
 						{
 							key: "InfuraDemo_version",
@@ -154,6 +160,7 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 		});
 
 		console.info("Blocks stored successfully:", receipt);
+		console.info("Latest Ethereum block number:", latestEthBlockNumber);
 
 		// Store latest block number if it is higher than the latest block number in Arkiv
 		const latestBlockNumber = await getLatestBlockNumber();
@@ -167,10 +174,10 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 	}
 }
 
-export async function getLatestBlockNumber(): Promise<bigint | null> {
+export async function getLatestBlockNumber(): Promise<bigint> {
 	const result = await getLatestBlockNumberEntity();
 	console.debug("result from query - latestBlockNumber", result);
-	return result ? BigInt(result.toText()) : null;
+	return result ? BigInt(result.toText()) : 0n;
 }
 
 export async function getBlock(blockNumber?: number): Promise<Entity | null> {

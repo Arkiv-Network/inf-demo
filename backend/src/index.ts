@@ -25,7 +25,7 @@ app.get("/collectData", async (c) => {
 		const gasPrice = await getGasPrice();
 		console.info(
 			"latestBlockOnEth",
-			latestBlockOnEth,
+			latestBlockOnEth?.number,
 			"latestBlockOnArkiv",
 			latestBlockNumberOnArkiv,
 			"gasPrice",
