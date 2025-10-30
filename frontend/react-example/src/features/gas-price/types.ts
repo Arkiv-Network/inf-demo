@@ -1,8 +1,7 @@
 export type GasPriceTrendPoint = {
   date: string;
   averageGasPriceGwei: number;
-  p95GasPriceGwei: number;
-  minimumGasPriceGwei: number;
+  arkivEntityKey?: string;
 };
 
 export type GasPriceHeatmapPoint = {

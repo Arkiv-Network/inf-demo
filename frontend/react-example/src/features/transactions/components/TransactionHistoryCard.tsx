@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts";
 
 import {
@@ -24,6 +26,12 @@ const axisFormatter = new Intl.DateTimeFormat(undefined, {
   day: "numeric",
 });
 
+const tooltipDateFormatter = new Intl.DateTimeFormat(undefined, {
+  month: "long",
+  day: "numeric",
+  year: "numeric",
+});
+
 const compactNumberFormatter = new Intl.NumberFormat(undefined, {
   notation: "compact",
   maximumFractionDigits: 1,
@@ -48,6 +56,28 @@ export function TransactionHistoryCard({
   className,
 }: TransactionHistoryCardProps) {
   const { data, isPending, isError, error } = useTransactionHistory();
+  const handleChartClick = useCallback(
+    (chartEvent?: {
+      activePayload?: Array<{ payload?: { arkivEntityKey?: string } | null }>;
+    }) => {
+      if (!chartEvent?.activePayload?.length) {
+        return;
+      }
+
+      const entityKey = chartEvent.activePayload
+        .map((item) => item?.payload?.arkivEntityKey)
+        .find((key): key is string => Boolean(key));
+
+      if (!entityKey) {
+        return;
+      }
+
+      const explorerUrl = `https://explorer.infurademo.hoodi.arkiv.network/entity/${entityKey}?tab=data`;
+
+      window.open(explorerUrl, "_blank", "noopener,noreferrer");
+    },
+    []
+  );
 
   return (
     <Card
@@ -81,65 +111,89 @@ export function TransactionHistoryCard({
             No transaction data is available yet.
           </div>
         ) : (
-          <ChartContainer config={chartConfig} className="h-72 w-full">
-            <AreaChart data={data}>
-              <CartesianGrid strokeDasharray="4 4" vertical={false} />
-              <XAxis
-                dataKey="date"
-                axisLine={false}
-                tickLine={false}
-                tickMargin={8}
-                tickFormatter={(value) =>
-                  axisFormatter.format(new Date(`${value}T00:00:00`))
-                }
-              />
-              <YAxis
-                width={72}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(value) => compactNumberFormatter.format(value)}
-              />
-              <ChartTooltip
-                cursor={{ strokeDasharray: "4 4" }}
-                content={
-                  <ChartTooltipContent
-                    labelKey="date"
-                    nameKey="series"
-                    formatter={(value, name) => (
-                      <div className="flex w-full items-center justify-between">
-                        <span className="text-muted-foreground">{name}</span>
-                        <span className="font-mono text-sm font-semibold">
-                          {Number(value).toLocaleString()}
-                        </span>
-                      </div>
-                    )}
-                  />
-                }
-              />
-              <Area
-                dataKey="transactionCount"
-                name="Transactions"
-                type="monotone"
-                stroke="var(--color-transactionCount)"
-                fill="var(--color-transactionCount)"
-                fillOpacity={0.25}
-                strokeWidth={2}
-              />
-              <Area
-                dataKey="uniqueAddresses"
-                name="Unique Addresses"
-                type="monotone"
-                stroke="var(--color-uniqueAddresses)"
-                fill="var(--color-uniqueAddresses)"
-                fillOpacity={0.15}
-                strokeWidth={2}
-              />
-              <ChartLegend
-                verticalAlign="top"
-                content={<ChartLegendContent className="pt-0" />}
-              />
-            </AreaChart>
-          </ChartContainer>
+          <>
+            <ChartContainer config={chartConfig} className="h-72 w-full">
+              <AreaChart
+                data={data}
+                onClick={handleChartClick}
+                style={{
+                  cursor: "pointer",
+                }}
+              >
+                <CartesianGrid strokeDasharray="4 4" vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tickMargin={8}
+                  tickFormatter={(value) =>
+                    axisFormatter.format(new Date(`${value}T00:00:00`))
+                  }
+                />
+                <YAxis
+                  width={72}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(value) =>
+                    compactNumberFormatter.format(value)
+                  }
+                />
+                <ChartTooltip
+                  cursor={{ strokeDasharray: "4 4" }}
+                  content={
+                    <ChartTooltipContent
+                      labelKey="date"
+                      nameKey="series"
+                      labelFormatter={(_, payloadItems) => {
+                        const rawDate = payloadItems?.[0]?.payload?.date;
+
+                        if (!rawDate) {
+                          return undefined;
+                        }
+
+                        return tooltipDateFormatter.format(
+                          new Date(`${rawDate}T00:00:00Z`)
+                        );
+                      }}
+                      formatter={(value, name) => (
+                        <div className="flex w-full items-center justify-between gap-4">
+                          <span className="text-muted-foreground">{name}</span>
+                          <span className="font-mono text-sm font-semibold">
+                            {Number(value).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                    />
+                  }
+                />
+                <Area
+                  dataKey="transactionCount"
+                  name="Transactions"
+                  type="monotone"
+                  stroke="var(--color-transactionCount)"
+                  fill="var(--color-transactionCount)"
+                  fillOpacity={0.25}
+                  strokeWidth={2}
+                />
+                <Area
+                  dataKey="uniqueAddresses"
+                  name="Unique Addresses"
+                  type="monotone"
+                  stroke="var(--color-uniqueAddresses)"
+                  fill="var(--color-uniqueAddresses)"
+                  fillOpacity={0.15}
+                  strokeWidth={2}
+                />
+                <ChartLegend
+                  verticalAlign="top"
+                  content={<ChartLegendContent className="pt-0" />}
+                />
+              </AreaChart>
+            </ChartContainer>
+            <p className="mt-3 text-xs italic text-muted-foreground">
+              Click any data point to open the entity in Arkiv Explorer.
+            </p>
+          </>
         )}
       </CardContent>
     </Card>

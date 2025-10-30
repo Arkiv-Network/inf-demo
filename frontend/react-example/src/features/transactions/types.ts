@@ -1,8 +1,7 @@
 export type TransactionsDailyPoint = {
   date: string;
   transactionCount: number;
-  uniqueAddresses: number;
-  averageGasPriceGwei: number;
+  arkivEntityKey?: string;
 };
 
 export type TransactionsHeatmapPoint = {

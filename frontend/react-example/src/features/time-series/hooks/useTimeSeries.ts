@@ -12,10 +12,6 @@ export function useTimeSeries(timeframe: "daily" | "hourly") {
   return useQuery({
     queryKey: ["time-series-data", entityOwner, protocolVersion, timeframe],
     queryFn: async () => {
-      // TODO: add daily timeframe
-      if (timeframe === "daily") {
-        return [];
-      }
       const timestampWeekAgo = Math.floor(Date.now() / 1000 - 7 * 24 * 60 * 60);
       const stats = await client
         .buildQuery()
@@ -23,9 +19,10 @@ export function useTimeSeries(timeframe: "daily" | "hourly") {
           eq("project", "InfDemo"),
           eq("InfDemo_version", protocolVersion),
           eq("InfDemo_dataType", "stats"),
-          eq("InfDemo_statsType", "hourly"),
+          eq("InfDemo_statsType", timeframe),
           gte("InfDemo_statsTimestamp", timestampWeekAgo),
         ])
+        .limit(timeframe === "daily" ? 30 : 7 * 24)
         .ownedBy(entityOwner)
         .withPayload()
         .withAnnotations()
