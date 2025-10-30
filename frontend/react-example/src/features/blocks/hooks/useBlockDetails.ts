@@ -20,6 +20,7 @@ export function useBlockDetails(
         .buildQuery()
         .where([
           eq("InfuraDemo_blockNumber", blockNumber),
+          eq("InfuraDemo_dataType", "blockdata"),
           eq("project", "InfuraDemo"),
           eq("InfuraDemo_version", protocolVersion),
         ])
