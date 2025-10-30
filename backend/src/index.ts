@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { aggregateDataLastHour } from "./aggregate";
+import { aggregateDataLastDay, aggregateDataLastHour } from "./aggregate";
 import { getLatestBlockNumber, storeBlocks } from "./arkiv";
 import { getBlock as getBlockOnEth, getGasPrice } from "./eth";
 
@@ -77,11 +77,14 @@ app.get("/collectData", async (c) => {
 app.get("/aggregateData", async (c) => {
 	try {
 		const aggregatedData = await aggregateDataLastHour();
+		const dailyAggregatedData = await aggregateDataLastDay();
 		return c.json({
 			success: true,
 			data: {
-				avgTransactionCount: aggregatedData.avgTransactionCount,
+				totalTransactionCount: aggregatedData.totalTransactionCount,
 				avgGasPrice: aggregatedData.avgGasPrice.toString(),
+				totalTransactionCountDaily: dailyAggregatedData.totalTransactionCount,
+				avgGasPriceDaily: dailyAggregatedData.avgGasPrice.toString(),
 			},
 		});
 	} catch (error) {
@@ -123,4 +126,5 @@ console.log(`🚀 Server starting on port ${port}`);
 export default {
 	port,
 	fetch: app.fetch,
+	idleTimeout: 120,
 };

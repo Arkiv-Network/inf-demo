@@ -17,7 +17,7 @@ export const blockSchema = z.object({
 export type BlockSchema = z.infer<typeof blockSchema>;
 
 export const aggregatedDataSchema = z.object({
-	avgTransactionCount: z.number(),
+	totalTransactionCount: z.number(),
 	avgGasPrice: z.string().transform((val) => BigInt(val)),
 });
 
