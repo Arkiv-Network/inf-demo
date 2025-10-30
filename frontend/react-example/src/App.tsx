@@ -5,8 +5,9 @@ import { GasPriceTrendCard } from "@/features/gas-price/components/GasPriceTrend
 import { TransactionHeatmapCard } from "@/features/transactions/components/TransactionHeatmapCard";
 import { TransactionHistoryCard } from "@/features/transactions/components/TransactionHistoryCard";
 import { LatestBlockHighlight } from "./features/blocks/components/LatestBlockHighlight";
-import { HighlightCard } from "./components/HighlightCard";
 import CurrentGasPriceHighlight from "./features/gas-price/components/CurrentGasPriceHighlight";
+import AverageGasPriceHighlight from "./features/gas-price/components/AverageGasPriceHighlight";
+import AverageTransactionsHighlight from "./features/transactions/components/AverageTransactionsHighlight";
 
 function App() {
   return (
@@ -48,8 +49,8 @@ function App() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <LatestBlockHighlight />
-                <HighlightCard title="Avg gas (30d)" value="24.8 Gwei" />
-                <HighlightCard title="Transactions" value="1.02M / day" />
+                <AverageGasPriceHighlight />
+                <AverageTransactionsHighlight />
                 <CurrentGasPriceHighlight />
               </div>
             </div>

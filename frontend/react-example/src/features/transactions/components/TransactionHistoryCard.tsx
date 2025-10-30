@@ -47,10 +47,6 @@ const chartConfig = {
     label: "Transactions",
     color: "var(--color-chart-1)",
   },
-  uniqueAddresses: {
-    label: "Unique Addresses",
-    color: "var(--color-chart-2)",
-  },
 };
 
 export function TransactionHistoryCard({
@@ -167,15 +163,6 @@ export function TransactionHistoryCard({
                 stroke="var(--color-transactionCount)"
                 fill="var(--color-transactionCount)"
                 fillOpacity={0.25}
-                strokeWidth={2}
-              />
-              <Area
-                dataKey="uniqueAddresses"
-                name="Unique Addresses"
-                type="monotone"
-                stroke="var(--color-uniqueAddresses)"
-                fill="var(--color-uniqueAddresses)"
-                fillOpacity={0.15}
                 strokeWidth={2}
               />
               <ChartLegend
