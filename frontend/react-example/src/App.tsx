@@ -18,8 +18,20 @@ function App() {
           <div className="flex flex-col gap-10">
             <div className="grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] md:items-center">
               <div className="space-y-6">
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1 text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-white/75">
-                  Built with Arkiv
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-1 text-[0.75rem] font-semibold uppercase tracking-[0.35em] text-white/75">
+                  Built with{" "}
+                  <a
+                    href="https://arkiv.network"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="-m-4 p-4 z-1 relative inline-block"
+                  >
+                    <img
+                      src={import.meta.env.BASE_URL + "arkiv-logo.svg"}
+                      alt="Arkiv Logo"
+                      className="w-14"
+                    />
+                  </a>
                 </span>
                 <div className="space-y-6">
                   <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl lg:text-5xl">
