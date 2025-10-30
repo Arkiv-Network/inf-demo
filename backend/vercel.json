@@ -8,7 +8,7 @@
 		},
 		{
 			"path": "/aggregateData",
-			"schedule": "/10 * * * *"
+			"schedule": "*/10 * * * *"
 		}
 	]
 }
