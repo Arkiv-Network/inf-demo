@@ -20,11 +20,11 @@ export function useTimeSeries(timeframe: "daily" | "hourly") {
       const stats = await client
         .buildQuery()
         .where([
-          eq("project", "InfuraDemo"),
-          eq("InfuraDemo_version", protocolVersion),
-          eq("InfuraDemo_dataType", "stats"),
-          eq("InfuraDemo_statsType", "hourly"),
-          gte("InfuraDemo_statsTimestamp", timestampWeekAgo),
+          eq("project", "InfDemo"),
+          eq("InfDemo_version", protocolVersion),
+          eq("InfDemo_dataType", "stats"),
+          eq("InfDemo_statsType", "hourly"),
+          gte("InfDemo_statsTimestamp", timestampWeekAgo),
         ])
         .ownedBy(entityOwner)
         .withPayload()
@@ -36,7 +36,7 @@ export function useTimeSeries(timeframe: "daily" | "hourly") {
             return HourlyStatsSchema.parse({
               arkivEntityKey: entity.key,
               timestamp: entity.annotations.find(
-                (a) => a.key === "InfuraDemo_statsTimestamp"
+                (a) => a.key === "InfDemo_statsTimestamp"
               )?.value,
               ...JSON.parse(entity.toText()),
             });

@@ -3,7 +3,7 @@ import * as z from "zod/v4";
 export const HourlyStatsSchema = z.object({
   arkivEntityKey: z.string(),
   avgGasPrice: z.string(),
-  avgTransactionCount: z.number(),
+  totalTransactionCount: z.number(),
   timestamp: z.number(),
 });
 

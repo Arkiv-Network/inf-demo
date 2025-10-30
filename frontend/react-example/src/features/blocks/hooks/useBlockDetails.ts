@@ -19,10 +19,10 @@ export function useBlockDetails(
       const blockDetail = await client
         .buildQuery()
         .where([
-          eq("InfuraDemo_blockNumber", blockNumber),
-          eq("InfuraDemo_dataType", "blockdata"),
-          eq("project", "InfuraDemo"),
-          eq("InfuraDemo_version", protocolVersion),
+          eq("InfDemo_blockNumber", blockNumber),
+          eq("InfDemo_dataType", "blockdata"),
+          eq("project", "InfDemo"),
+          eq("InfDemo_version", protocolVersion),
         ])
         .withPayload()
         .ownedBy(entityOwner)

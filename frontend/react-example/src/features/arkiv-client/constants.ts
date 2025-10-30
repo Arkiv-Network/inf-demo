@@ -18,4 +18,4 @@ export const ARKIV_CHAIN: Chain = {
 
 export const ENTITY_OWNER = "0xF46E23f6a6F6336D4C64D5D1c95599bF77a536f0";
 
-export const PROTOCOL_VERSION = "0.4";
+export const PROTOCOL_VERSION = "0.7";

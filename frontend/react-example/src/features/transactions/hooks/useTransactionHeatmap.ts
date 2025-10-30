@@ -17,7 +17,7 @@ export function useTransactionHeatmap() {
         return {
           day: date.toISOString().slice(0, 10),
           hour: date.getUTCHours(),
-          transactionCount: Number(point.avgTransactionCount),
+          transactionCount: Number(point.totalTransactionCount),
           arkivEntityKey: point.arkivEntityKey,
         };
       });

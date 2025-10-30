@@ -16,10 +16,10 @@ export function useLatestBlocks() {
       const latestBlocks = await client
         .buildQuery()
         .where([
-          eq("project", "InfuraDemo"),
-          eq("InfuraDemo_version", protocolVersion),
-          eq("InfuraDemo_dataType", "blockdata"),
-          gte("InfuraDemo_blockTimestamp", interval5MinAgo),
+          eq("project", "InfDemo"),
+          eq("InfDemo_version", protocolVersion),
+          eq("InfDemo_dataType", "blockdata"),
+          gte("InfDemo_blockTimestamp", interval5MinAgo),
         ])
         .ownedBy(entityOwner)
         .withPayload()
