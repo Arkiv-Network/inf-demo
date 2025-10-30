@@ -1,0 +1,10 @@
+import * as z from "zod/v4";
+
+export const HourlyStatsSchema = z.object({
+  arkivEntityKey: z.string(),
+  avgGasPrice: z.string(),
+  avgTransactionCount: z.number(),
+  timestamp: z.number(),
+});
+
+export type HourlyStats = z.infer<typeof HourlyStatsSchema>;

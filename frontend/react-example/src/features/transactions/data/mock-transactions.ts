@@ -1,7 +1,4 @@
-import type {
-  TransactionsDailyPoint,
-  TransactionsHeatmapPoint,
-} from "../types";
+import type { TransactionsDailyPoint } from "../types";
 
 const DAY_IN_MS = 86_400_000;
 const BASE_DATE = Date.UTC(2025, 9, 27, 0, 0, 0);
@@ -33,23 +30,3 @@ export const MOCK_TRANSACTIONS_DAILY: TransactionsDailyPoint[] = Array.from(
     };
   }
 );
-
-export const MOCK_TRANSACTIONS_HEATMAP: TransactionsHeatmapPoint[] = Array.from(
-  { length: 7 },
-  (_, dayIndex) => {
-    const dayTimestamp = new Date(BASE_DATE - (6 - dayIndex) * DAY_IN_MS);
-    const dayKey = dayTimestamp.toISOString().slice(0, 10);
-
-    return Array.from({ length: 24 }, (_, hour) => {
-      const base = 420 + Math.sin((hour / 24) * Math.PI * 2) * 160;
-      const demandAdjustment = 1 + dayIndex * 0.04;
-      const transactionCount = Math.round(base * demandAdjustment);
-
-      return {
-        day: dayKey,
-        hour,
-        transactionCount,
-      };
-    });
-  }
-).flat();

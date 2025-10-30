@@ -9,4 +9,5 @@ export type TransactionsHeatmapPoint = {
   day: string;
   hour: number;
   transactionCount: number;
+  arkivEntityKey?: string;
 };

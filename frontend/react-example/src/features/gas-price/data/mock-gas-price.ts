@@ -1,4 +1,4 @@
-import type { GasPriceHeatmapPoint, GasPriceTrendPoint } from "../types";
+import type { GasPriceTrendPoint } from "../types";
 
 const DAY_IN_MS = 86_400_000;
 const BASE_DATE = Date.UTC(2025, 9, 27, 0, 0, 0);
@@ -25,23 +25,3 @@ export const MOCK_GAS_PRICE_TREND: GasPriceTrendPoint[] = Array.from(
     };
   }
 );
-
-export const MOCK_GAS_PRICE_HEATMAP: GasPriceHeatmapPoint[] = Array.from(
-  { length: 7 },
-  (_, dayIndex) => {
-    const currentDate = new Date(BASE_DATE - (6 - dayIndex) * DAY_IN_MS);
-    const dayKey = currentDate.toISOString().slice(0, 10);
-
-    return Array.from({ length: 24 }, (_, hour) => {
-      const diurnalCycle = Math.sin((hour / 24) * Math.PI * 2) * 6;
-      const baseline = 21 + dayIndex * 0.9;
-      const averageGasPriceGwei = round(baseline + diurnalCycle + hour * 0.08);
-
-      return {
-        day: dayKey,
-        hour,
-        averageGasPriceGwei,
-      };
-    });
-  }
-).flat();
