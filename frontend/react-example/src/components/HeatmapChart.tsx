@@ -268,6 +268,25 @@ export function HeatmapChart<TMeta = unknown>({
       };
     }, [alwaysShowRange, data, daysToShow, todayKey]);
 
+  const hasInitialData = Array.isArray(data) && data.length > 0;
+  const showError = isError;
+  const showLoading = !showError && (isPending || !hasInitialData);
+  const showEmpty = !showError && !showLoading && !days.length;
+
+  const loadingDays = useMemo(() => {
+    if (days.length) {
+      return days;
+    }
+    const todayUtc = new Date(`${todayKey}T00:00:00Z`);
+    return Array.from({ length: daysToShow }, (_, index) => {
+      const dayDate = new Date(todayUtc);
+      dayDate.setUTCDate(todayUtc.getUTCDate() - (daysToShow - 1 - index));
+      return dayDate.toISOString().slice(0, 10);
+    });
+  }, [days, daysToShow, todayKey]);
+
+  const renderedDays = showLoading ? loadingDays : days;
+
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
   useEffect(() => {
@@ -351,15 +370,11 @@ export function HeatmapChart<TMeta = unknown>({
         </div>
       </CardHeader>
       <CardContent>
-        {isPending ? (
-          <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
-            {copy.loading}
-          </div>
-        ) : isError ? (
+        {showError ? (
           <div className="flex h-80 items-center justify-center text-sm text-destructive">
             {copy.error(error)}
           </div>
-        ) : !days.length ? (
+        ) : showEmpty ? (
           <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
             {copy.empty}
           </div>
@@ -381,20 +396,27 @@ export function HeatmapChart<TMeta = unknown>({
               </span>
             </div>
             <div className="flex flex-wrap gap-2 md:hidden">
-              {days.map((day) => {
+              {renderedDays.map((day) => {
                 const label = dayFormatter.format(new Date(`${day}T00:00:00`));
-                const isActive = day === activeDay;
+                const isActive = !showLoading && day === activeDay;
                 return (
                   <button
                     key={day}
                     type="button"
-                    onClick={() => setSelectedDay(day)}
+                    onClick={() => {
+                      if (!showLoading) {
+                        setSelectedDay(day);
+                      }
+                    }}
+                    disabled={showLoading}
+                    aria-disabled={showLoading}
                     className={cn(
                       "rounded-full border px-3 py-1 text-xs font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
                       theme.daySelector.base,
                       isActive
                         ? theme.daySelector.active
-                        : theme.daySelector.inactive
+                        : theme.daySelector.inactive,
+                      showLoading && "pointer-events-none opacity-70"
                     )}
                   >
                     {label}
@@ -421,7 +443,7 @@ export function HeatmapChart<TMeta = unknown>({
                       >
                         Hour
                       </th>
-                      {days.map((day) => {
+                      {renderedDays.map((day) => {
                         const label = dayFormatter.format(
                           new Date(`${day}T00:00:00`)
                         );
@@ -452,14 +474,14 @@ export function HeatmapChart<TMeta = unknown>({
                         >
                           {formatHourLabel(hour)}
                         </th>
-                        {days.map((day) => {
+                        {renderedDays.map((day) => {
                           const entry = getCellEntry(day, hour);
                           const styles = resolveCellStyles(entry);
                           const dayLabel = dayFormatter.format(
                             new Date(`${day}T00:00:00`)
                           );
                           const tooltip =
-                            entry && formatters.tooltip
+                            !showLoading && entry && formatters.tooltip
                               ? formatters.tooltip({
                                   value: entry.value,
                                   day,
@@ -468,12 +490,37 @@ export function HeatmapChart<TMeta = unknown>({
                                   meta: entry.datum.meta,
                                 })
                               : undefined;
-                          const href = entry
-                            ? getCellHref?.(entry.datum)
-                            : undefined;
+                          const href =
+                            !showLoading && entry
+                              ? getCellHref?.(entry.datum)
+                              : undefined;
                           const cellValue = entry
                             ? formatters.cell(entry.value)
                             : "";
+                          const cellContent = showLoading ? (
+                            <div className="px-2 py-1.5">
+                              <div className="flex items-center justify-center relative">
+                                <span className="inset-0 absolute bg-slate-200 animate-pulse rounded" />
+                                <span className="opacity-0" aria-hidden="true">
+                                  00.00
+                                </span>
+                              </div>
+                            </div>
+                          ) : href ? (
+                            <a
+                              href={href}
+                              target={effectiveTarget}
+                              rel={effectiveRel}
+                              className={cn(
+                                "block h-full w-full px-2 py-1.5",
+                                theme.interactiveCell
+                              )}
+                            >
+                              {cellValue}
+                            </a>
+                          ) : (
+                            <div className="px-2 py-1.5">{cellValue}</div>
+                          );
 
                           return (
                             <td
@@ -482,8 +529,8 @@ export function HeatmapChart<TMeta = unknown>({
                                 "border",
                                 theme.table.cellBorder,
                                 href
-                                  ? "hover:scale-105 hover:brightness-105 transition-all"
-                                  : "px-2 py-1.5"
+                                  ? "hover:scale-105 hover:brightness-105 transition-transform"
+                                  : ""
                               )}
                               style={{
                                 backgroundColor: styles.backgroundColor,
@@ -492,21 +539,7 @@ export function HeatmapChart<TMeta = unknown>({
                               }}
                               title={tooltip}
                             >
-                              {href ? (
-                                <a
-                                  href={href}
-                                  target={effectiveTarget}
-                                  rel={effectiveRel}
-                                  className={cn(
-                                    "block w-full h-full px-2 py-1.5",
-                                    theme.interactiveCell
-                                  )}
-                                >
-                                  {cellValue}
-                                </a>
-                              ) : (
-                                cellValue
-                              )}
+                              {cellContent}
                             </td>
                           );
                         })}
@@ -517,54 +550,125 @@ export function HeatmapChart<TMeta = unknown>({
               </div>
             </div>
             <div className={cn("md:hidden space-y-3", theme.mobileText)}>
-              {activeDay ? (
-                <section className={theme.mobile.section}>
-                  <header className="flex items-center justify-between text-[0.85rem] font-semibold">
-                    <span>{activeDayLabel}</span>
-                    {copy.mobileHeaderBadge ? (
-                      <span
-                        className={cn(
-                          "text-xs font-semibold uppercase tracking-wide",
-                          theme.mobile.badge
-                        )}
-                      >
-                        {copy.mobileHeaderBadge(summaryDisplay)}
-                      </span>
-                    ) : null}
-                  </header>
-                  <div className="mt-3">
-                    <div className="grid grid-cols-3 gap-1 text-[0.75rem] font-semibold">
-                      {hours.map((hour) => {
-                        const entry = getCellEntry(activeDay, hour);
-                        const styles = resolveCellStyles(entry);
-                        const tooltip =
-                          entry && formatters.tooltip
-                            ? formatters.tooltip({
-                                value: entry.value,
-                                day: activeDay,
-                                hour,
-                                dayLabel: activeDayLabel,
-                                meta: entry.datum.meta,
-                              })
-                            : undefined;
-                        const href = entry
-                          ? getCellHref?.(entry.datum)
-                          : undefined;
-                        const cellValue = entry
-                          ? formatters.cell(entry.value)
-                          : "";
+              {(() => {
+                const mobileDay = showLoading
+                  ? renderedDays[renderedDays.length - 1] ?? null
+                  : activeDay;
+                if (!mobileDay) {
+                  return (
+                    <div className={theme.mobile.emptySection}>
+                      {copy.mobileRangeWithoutSelection}
+                    </div>
+                  );
+                }
 
-                        if (href) {
+                const mobileDayLabel = dayFormatter.format(
+                  new Date(`${mobileDay}T00:00:00`)
+                );
+
+                return (
+                  <section className={theme.mobile.section}>
+                    <header className="flex items-center justify-between text-[0.85rem] font-semibold">
+                      <span>{mobileDayLabel}</span>
+                      {copy.mobileHeaderBadge ? (
+                        <span
+                          className={cn(
+                            "text-xs font-semibold uppercase tracking-wide",
+                            theme.mobile.badge,
+                            showLoading && "animate-pulse"
+                          )}
+                        >
+                          {copy.mobileHeaderBadge(summaryDisplay)}
+                        </span>
+                      ) : null}
+                    </header>
+                    <div className="mt-3">
+                      <div className="grid grid-cols-3 gap-1 text-[0.75rem] font-semibold">
+                        {hours.map((hour) => {
+                          const entry = getCellEntry(mobileDay, hour);
+                          const styles = resolveCellStyles(entry);
+                          const tooltip =
+                            !showLoading && entry && formatters.tooltip
+                              ? formatters.tooltip({
+                                  value: entry.value,
+                                  day: mobileDay,
+                                  hour,
+                                  dayLabel: mobileDayLabel,
+                                  meta: entry.datum.meta,
+                                })
+                              : undefined;
+                          const href =
+                            !showLoading && entry
+                              ? getCellHref?.(entry.datum)
+                              : undefined;
+                          const cellValue = entry
+                            ? formatters.cell(entry.value)
+                            : "";
+
+                          if (showLoading) {
+                            return (
+                              <div
+                                key={`${mobileDay}-${hour}`}
+                                className="flex h-16 flex-col items-center justify-center gap-2 rounded border px-1 text-center"
+                                style={{
+                                  backgroundColor: styles.backgroundColor,
+                                  borderColor: styles.borderColor,
+                                  color: styles.color,
+                                }}
+                              >
+                                <span className="block h-4 w-16 rounded bg-slate-200 animate-pulse" />
+                                <span
+                                  className={cn(
+                                    "text-[0.6rem] font-medium uppercase tracking-wide",
+                                    theme.mobile.cellHour
+                                  )}
+                                >
+                                  <span className="block h-3 w-12 rounded bg-slate-200 animate-pulse" />
+                                  <span className="sr-only">
+                                    {copy.loading}
+                                  </span>
+                                </span>
+                              </div>
+                            );
+                          }
+
+                          if (href) {
+                            return (
+                              <a
+                                key={`${mobileDay}-${hour}`}
+                                href={href}
+                                target={effectiveTarget}
+                                rel={effectiveRel}
+                                className={cn(
+                                  "flex h-16 flex-col items-center justify-center gap-1 rounded border px-1 text-center",
+                                  theme.interactiveTile
+                                )}
+                                style={{
+                                  backgroundColor: styles.backgroundColor,
+                                  borderColor: styles.borderColor,
+                                  color: styles.color,
+                                }}
+                                title={tooltip}
+                              >
+                                <span className="leading-none">
+                                  {cellValue}
+                                </span>
+                                <span
+                                  className={cn(
+                                    "text-[0.6rem] font-medium uppercase tracking-wide",
+                                    theme.mobile.cellHour
+                                  )}
+                                >
+                                  {formatHourLabel(hour)}
+                                </span>
+                              </a>
+                            );
+                          }
+
                           return (
-                            <a
-                              key={`${activeDay}-${hour}`}
-                              href={href}
-                              target={effectiveTarget}
-                              rel={effectiveRel}
-                              className={cn(
-                                "flex h-16 flex-col items-center justify-center gap-1 rounded border px-1 text-center",
-                                theme.interactiveTile
-                              )}
+                            <div
+                              key={`${mobileDay}-${hour}`}
+                              className="flex h-16 flex-col items-center justify-center gap-1 rounded border px-1 text-center"
                               style={{
                                 backgroundColor: styles.backgroundColor,
                                 borderColor: styles.borderColor,
@@ -581,60 +685,34 @@ export function HeatmapChart<TMeta = unknown>({
                               >
                                 {formatHourLabel(hour)}
                               </span>
-                            </a>
+                            </div>
                           );
-                        }
-
-                        return (
-                          <div
-                            key={`${activeDay}-${hour}`}
-                            className="flex h-16 flex-col items-center justify-center gap-1 rounded border px-1 text-center"
-                            style={{
-                              backgroundColor: styles.backgroundColor,
-                              borderColor: styles.borderColor,
-                              color: styles.color,
-                            }}
-                            title={tooltip}
-                          >
-                            <span className="leading-none">{cellValue}</span>
-                            <span
-                              className={cn(
-                                "text-[0.6rem] font-medium uppercase tracking-wide",
-                                theme.mobile.cellHour
-                              )}
-                            >
-                              {formatHourLabel(hour)}
-                            </span>
-                          </div>
-                        );
-                      })}
+                        })}
+                      </div>
                     </div>
-                  </div>
-                  {(copy.mobileFooter || mobileFooterBadge) && (
-                    <footer className="mt-3 flex items-center justify-between text-[0.7rem]">
-                      <span>
-                        {copy.mobileFooter
-                          ? copy.mobileFooter(summaryDisplay)
-                          : null}
-                      </span>
-                      {mobileFooterBadge ? (
-                        <span
-                          className={cn(
-                            "uppercase tracking-wide",
-                            theme.mobile.badge
-                          )}
-                        >
-                          {mobileFooterBadge}
+                    {(copy.mobileFooter || mobileFooterBadge) && (
+                      <footer className="mt-3 flex items-center justify-between text-[0.7rem]">
+                        <span>
+                          {copy.mobileFooter
+                            ? copy.mobileFooter(summaryDisplay)
+                            : null}
                         </span>
-                      ) : null}
-                    </footer>
-                  )}
-                </section>
-              ) : (
-                <div className={theme.mobile.emptySection}>
-                  {copy.mobileRangeWithoutSelection}
-                </div>
-              )}
+                        {mobileFooterBadge ? (
+                          <span
+                            className={cn(
+                              "uppercase tracking-wide",
+                              theme.mobile.badge,
+                              showLoading && "animate-pulse"
+                            )}
+                          >
+                            {mobileFooterBadge}
+                          </span>
+                        ) : null}
+                      </footer>
+                    )}
+                  </section>
+                );
+              })()}
             </div>
             <div
               className={cn(
