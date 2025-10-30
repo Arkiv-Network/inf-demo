@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -43,7 +44,7 @@ const chartConfig = {
 };
 
 export function GasPriceTrendCard({ className }: GasPriceTrendCardProps) {
-  const { data, isPending, isError, error } = useGasPriceChartData("daily");
+  const { data, isError, error } = useGasPriceChartData("daily");
 
   const handleChartClick = useCallback(
     (chartEvent?: {
@@ -85,11 +86,7 @@ export function GasPriceTrendCard({ className }: GasPriceTrendCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {isPending ? (
-          <div className="flex h-72 items-center justify-center text-sm text-muted-foreground">
-            Loading gas price trends...
-          </div>
-        ) : isError ? (
+        {isError ? (
           <div className="flex h-72 items-center justify-center text-sm text-destructive">
             {error instanceof Error
               ? error.message
@@ -97,85 +94,89 @@ export function GasPriceTrendCard({ className }: GasPriceTrendCardProps) {
           </div>
         ) : !data?.length ? (
           <div className="flex h-72 items-center justify-center text-sm text-muted-foreground">
-            Gas price data will appear soon.
+            Loading gas price trends...
           </div>
         ) : (
-          <>
-            <ChartContainer config={chartConfig} className="h-72 w-full">
-              <AreaChart
-                data={data}
-                onClick={handleChartClick}
-                style={{
-                  cursor: "pointer",
-                }}
-              >
-                <CartesianGrid strokeDasharray="4 4" vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  axisLine={false}
-                  tickLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) =>
-                    dayFormatter.format(new Date(`${value}T00:00:00`))
-                  }
-                />
-                <YAxis
-                  width={72}
-                  axisLine={false}
-                  tickLine={false}
-                  tickMargin={8}
-                  tickFormatter={(value) => `${value.toFixed(0)} Gwei`}
-                />
-                <ChartTooltip
-                  cursor={{ strokeDasharray: "4 4" }}
-                  content={
-                    <ChartTooltipContent
-                      labelKey="date"
-                      nameKey="series"
-                      labelFormatter={(_, payloadItems) => {
-                        const rawDate = payloadItems?.[0]?.payload?.date;
+          <ChartContainer config={chartConfig} className="h-72 w-full">
+            <AreaChart
+              data={data}
+              onClick={handleChartClick}
+              style={{
+                cursor: "pointer",
+              }}
+            >
+              <CartesianGrid strokeDasharray="4 4" vertical={false} />
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tickMargin={8}
+                tickFormatter={(value) =>
+                  dayFormatter.format(new Date(`${value}T00:00:00`))
+                }
+              />
+              <YAxis
+                width={72}
+                axisLine={false}
+                tickLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => `${value.toFixed(0)} Gwei`}
+              />
+              <ChartTooltip
+                cursor={{ strokeDasharray: "4 4" }}
+                content={
+                  <ChartTooltipContent
+                    labelKey="date"
+                    nameKey="series"
+                    labelFormatter={(_, payloadItems) => {
+                      const rawDate = payloadItems?.[0]?.payload?.date;
 
-                        if (!rawDate) {
-                          return undefined;
-                        }
+                      if (!rawDate) {
+                        return undefined;
+                      }
 
-                        return tooltipDateFormatter.format(
-                          new Date(`${rawDate}T00:00:00Z`)
-                        );
-                      }}
-                      formatter={(value, name) => (
-                        <div className="flex w-full items-center justify-between gap-4">
-                          <span className="text-muted-foreground">{name}</span>
-                          <span className="font-mono text-sm font-semibold">
-                            {Number(value).toLocaleString()}
-                          </span>
-                        </div>
-                      )}
-                    />
-                  }
-                />
-                <Area
-                  type="monotone"
-                  dataKey="averageGasPriceGwei"
-                  name="Average Gwei"
-                  stroke="var(--color-averageGasPriceGwei)"
-                  strokeWidth={2.5}
-                  fill="var(--color-averageGasPriceGwei)"
-                  fillOpacity={0.3}
-                  dot={false}
-                />
-                <ChartLegend
-                  verticalAlign="top"
-                  content={<ChartLegendContent className="pt-0" />}
-                />
-              </AreaChart>
-            </ChartContainer>
-            <p className="mt-3 text-xs italic text-muted-foreground">
-              Click any data point to open the entity in Arkiv Explorer.
-            </p>
-          </>
+                      return tooltipDateFormatter.format(
+                        new Date(`${rawDate}T00:00:00Z`)
+                      );
+                    }}
+                    formatter={(value, name) => (
+                      <div className="flex w-full items-center justify-between gap-4">
+                        <span className="text-muted-foreground">{name}</span>
+                        <span className="font-mono text-sm font-semibold">
+                          {Number(value).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                  />
+                }
+              />
+              <Area
+                type="monotone"
+                dataKey="averageGasPriceGwei"
+                name="Average Gwei"
+                stroke="var(--color-averageGasPriceGwei)"
+                strokeWidth={2.5}
+                fill="var(--color-averageGasPriceGwei)"
+                fillOpacity={0.3}
+                dot={false}
+              />
+              <ChartLegend
+                verticalAlign="top"
+                content={<ChartLegendContent className="pt-0" />}
+              />
+            </AreaChart>
+          </ChartContainer>
         )}
       </CardContent>
+      <CardFooter>
+        {data?.length ? (
+          <p className="text-xs italic text-muted-foreground">
+            Click any data point to open the entity in Arkiv Explorer.
+          </p>
+        ) : (
+          <span className="rounded bg-slate-200 animate-pulse w-full h-[1em]" />
+        )}
+      </CardFooter>
     </Card>
   );
 }
