@@ -2,7 +2,7 @@ import type { Chain } from "@arkiv-network/sdk";
 
 export const ARKIV_CHAIN: Chain = {
   id: 60138453045,
-  name: "Arkiv InfuraDemo Testnet",
+  name: "Arkiv InfDemo Testnet",
   nativeCurrency: {
     decimals: 18,
     name: "Ether",
