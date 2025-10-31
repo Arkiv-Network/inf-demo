@@ -45,7 +45,7 @@ type TransactionHistoryCardProps = {
 const chartConfig = {
   transactionCount: {
     label: "Transactions",
-    color: "var(--color-chart-1)",
+    color: "var(--color-chart-2)",
   },
 };
 
