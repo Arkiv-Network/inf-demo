@@ -5,9 +5,11 @@ on:
   push:
     paths:
       - "frontend/react-example/**"
+      - "frontend/vanilla-js-example/**"
   pull_request:
     paths:
       - "frontend/react-example/**"
+      - "frontend/vanilla-js-example/**"
 
 # Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
 permissions:
@@ -23,9 +25,6 @@ concurrency:
 jobs:
   # Single deploy job since we're just deploying
   deploy:
-    defaults:
-      run:
-        working-directory: frontend/react-example
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -35,17 +34,30 @@ jobs:
         uses: actions/checkout@v5
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
-      - name: Install dependencies
+      - name: Install dependencies for React app
+        working-directory: frontend/react-example
         run: bun install
-      - name: Build
+      - name: Build React app
+        working-directory: frontend/react-example
         run: bun run build
+      - name: Create deployment directory
+        run: |
+          mkdir -p deploy
+          mkdir -p deploy/showcase
+          mkdir -p deploy/core
+      - name: Copy React build to showcase directory
+        run: cp -r frontend/react-example/dist/* deploy/showcase/
+      - name: Copy vanilla-js to core directory
+        run: cp -r frontend/vanilla-js-example/* deploy/core/
+      - name: Copy landing page as index
+        run: cp frontend/landing-page.html deploy/index.html
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          # Upload dist folder
-          path: "./frontend/react-example/dist"
+          # Upload deploy folder with both apps
+          path: "./deploy"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arkiv Ethereum Examples</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, monospace, sans-serif;
+        line-height: 1.6;
+        color: #24292f;
+        background: #ffffff;
+        padding: 3rem 1.5rem;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+      }
+
+      .subtitle {
+        color: #57606a;
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+      }
+
+      section {
+        margin-bottom: 2.5rem;
+      }
+
+      h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        border-bottom: 1px solid #d0d7de;
+        padding-bottom: 0.5rem;
+      }
+
+      p {
+        margin-bottom: 1rem;
+        color: #24292f;
+      }
+
+      .examples {
+        list-style: none;
+        margin-top: 1.5rem;
+      }
+
+      .examples li {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border: 1px solid #d0d7de;
+        border-radius: 6px;
+      }
+
+      .examples li:hover {
+        border-color: #0969da;
+        background: #f6f8fa;
+      }
+
+      .example-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .example-tech {
+        color: #57606a;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+      }
+
+      a {
+        color: #0969da;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .link-arrow {
+        display: inline-block;
+        margin-left: 0.25rem;
+      }
+
+      code {
+        background: #f6f8fa;
+        padding: 0.2em 0.4em;
+        border-radius: 3px;
+        font-size: 0.9em;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+          "Liberation Mono", monospace;
+      }
+
+      .footer {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid #d0d7de;
+        color: #57606a;
+        font-size: 0.95rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Arkiv Ethereum Examples</h1>
+    <p class="subtitle">
+      Demo applications showcasing what you can build with
+      <a href="https://arkiv.network" target="_blank">Arkiv</a>, a universal and
+      cost-efficient data layer for Ethereum.
+    </p>
+
+    <section>
+      <h2>About</h2>
+      <p>
+        This repository contains two example implementations that demonstrate
+        how to query and visualize Ethereum network data using Arkiv. Both
+        examples show real-time gas prices, block information, and transaction
+        analytics.
+      </p>
+    </section>
+
+    <section>
+      <h2>Examples</h2>
+      <ul class="examples">
+        <li>
+          <div class="example-title">
+            <a href="./showcase/"
+              >Showcase Dashboard <span class="link-arrow">→</span></a
+            >
+          </div>
+          <div class="example-tech">React + Vite + TypeScript</div>
+          <p>
+            Modern dashboard with interactive charts, heatmaps, and real-time
+            data visualization. Features a polished UI built with React and
+            shadcn/ui components.
+          </p>
+        </li>
+        <li>
+          <div class="example-title">
+            <a href="./core/"
+              >Core Dashboard <span class="link-arrow">→</span></a
+            >
+          </div>
+          <div class="example-tech">Vanilla JavaScript + HTML + CSS</div>
+          <p>
+            Lightweight implementation with zero framework dependencies.
+            Demonstrates the same functionality with minimal overhead and a
+            clean, straightforward approach.
+          </p>
+        </li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Source Code</h2>
+      <p>
+        View the complete source code, documentation, and setup instructions on
+        GitHub:
+        <a
+          href="https://github.com/arkiv-network/inf-demo"
+          target="_blank"
+          rel="noopener noreferrer"
+          >github.com/arkiv-network/inf-demo</a
+        >
+      </p>
+    </section>
+
+    <footer class="footer">
+      <p>
+        Built with <a href="https://arkiv.network" target="_blank">Arkiv</a> ·
+        <a
+          href="https://github.com/arkiv-network/inf-demo"
+          target="_blank"
+          rel="noopener noreferrer"
+          >View on GitHub</a
+        >
+      </p>
+    </footer>
+  </body>
+</html>
