@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Weekly Stats – Arkiv Insights</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+    <meta
+      name="description"
+      content="Monitor Ethereum network activity and gas prices using Arkiv - a universal, cost efficient data layer where you control your data on Ethereum."
+    />
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="site-sidebar">
+        <div class="site-sidebar__content">
+          <div class="site-sidebar__brand">
+            <a class="brand-title" href="../index.html">Ethereum Insights</a>
+          </div>
+          <nav class="site-nav">
+            <ul class="nav__list">
+              <li>
+                <a class="nav__link" href="../index.html">Home</a>
+              </li>
+              <li>
+                <a class="nav__link" href="./blocks.html">Ethereum Blocks</a>
+              </li>
+              <li>
+                <a
+                  class="nav__link"
+                  href="./weekly-stats.html"
+                  aria-current="page"
+                >
+                  Weekly Stats
+                </a>
+              </li>
+              <li>
+                <a class="nav__link" href="./network-congestion.html">
+                  Network Congestion
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="site-sidebar__footer">
+          <span class="brand-badge">
+            Built with
+            <a
+              class="brand-badge__logo"
+              href="https://arkiv.network"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="../assets/arkiv-logo.svg" alt="Arkiv logo" />
+            </a>
+          </span>
+        </div>
+      </aside>
+
+      <div class="layout__main">
+        <main class="page-content">
+          <section class="card card--summary">
+            <header class="card-header">
+              <div>
+                <h1>Weekly gas &amp; transaction trends</h1>
+                <p>
+                  Aggregated daily statistics from Arkiv highlight how fees and
+                  throughput evolve over the last seven days.
+                </p>
+              </div>
+              <span class="badge badge--accent" data-summary-status
+                >Loading…</span
+              >
+            </header>
+            <div class="card__body summary-grid">
+              <article class="summary-card">
+                <span class="summary-label">Latest gas average</span>
+                <span class="summary-value" data-summary-gas-latest>--</span>
+                <span
+                  class="summary-caption"
+                  data-summary-gas-latest-date
+                ></span>
+              </article>
+              <article class="summary-card">
+                <span class="summary-label">7 day gas mean</span>
+                <span class="summary-value" data-summary-gas-mean>--</span>
+                <span class="summary-caption">Derived from daily averages</span>
+              </article>
+              <article class="summary-card">
+                <span class="summary-label">Peak transactions</span>
+                <span class="summary-value" data-summary-tx-peak>--</span>
+                <span class="summary-caption" data-summary-tx-peak-date></span>
+              </article>
+              <article class="summary-card">
+                <span class="summary-label">Tx 7 day mean</span>
+                <span class="summary-value" data-summary-tx-mean>--</span>
+                <span class="summary-caption">Total transactions per day</span>
+              </article>
+            </div>
+          </section>
+
+          <section class="content-grid weekly-charts">
+            <div class="card chart-card">
+              <header class="card-header">
+                <div>
+                  <h2>Average gas price (daily)</h2>
+                  <p>Seven-day view of the mean gas price expressed in gwei.</p>
+                </div>
+              </header>
+              <div class="card__body chart-container">
+                <canvas id="gas-weekly-chart" height="320"></canvas>
+              </div>
+            </div>
+
+            <div class="card chart-card">
+              <header class="card-header">
+                <div>
+                  <h2>Transaction throughput (daily)</h2>
+                  <p>
+                    Total transaction count captured per day across the last
+                    week.
+                  </p>
+                </div>
+              </header>
+              <div class="card__body chart-container">
+                <canvas id="tx-weekly-chart" height="320"></canvas>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="../scripts/weekly-stats.js"></script>
+    <noscript>Enable JavaScript to view the weekly charts.</noscript>
+  </body>
+</html>

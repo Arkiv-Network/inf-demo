@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Network Congestion – Arkiv Insights</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+    <meta
+      name="description"
+      content="Monitor Ethereum network activity and gas prices using Arkiv - a universal, cost efficient data layer where you control your data on Ethereum."
+    />
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="site-sidebar">
+        <div class="site-sidebar__content">
+          <div class="site-sidebar__brand">
+            <a class="brand-title" href="../index.html">Ethereum Insights</a>
+          </div>
+          <nav class="site-nav">
+            <ul class="nav__list">
+              <li>
+                <a class="nav__link" href="../index.html">Home</a>
+              </li>
+              <li>
+                <a class="nav__link" href="./blocks.html">Ethereum Blocks</a>
+              </li>
+              <li>
+                <a class="nav__link" href="./weekly-stats.html">Weekly Stats</a>
+              </li>
+              <li>
+                <a
+                  class="nav__link"
+                  href="./network-congestion.html"
+                  aria-current="page"
+                >
+                  Network Congestion
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="site-sidebar__footer">
+          <span class="brand-badge">
+            Built with
+            <a
+              class="brand-badge__logo"
+              href="https://arkiv.network"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="../assets/arkiv-logo.svg" alt="Arkiv logo" />
+            </a>
+          </span>
+        </div>
+      </aside>
+
+      <div class="layout__main">
+        <main class="page-content">
+          <section class="card card--summary">
+            <header class="card-header">
+              <div>
+                <h1>Network congestion outlook</h1>
+                <p>
+                  Hourly statistics from Arkiv track fee pressure and
+                  transaction load so you can gauge short-term congestion on the
+                  Ethereum blockchain.
+                </p>
+              </div>
+              <span class="badge badge--accent" data-congestion-status
+                >Loading…</span
+              >
+            </header>
+            <div class="card__body summary-grid">
+              <article class="summary-card">
+                <span class="summary-label">Current gas price</span>
+                <span class="summary-value" data-congestion-gas-now>--</span>
+                <span
+                  class="summary-caption"
+                  data-congestion-gas-now-time
+                ></span>
+              </article>
+              <article class="summary-card">
+                <span class="summary-label">Current transactions</span>
+                <span class="summary-value" data-congestion-tx-now>--</span>
+                <span
+                  class="summary-caption"
+                  data-congestion-tx-now-time
+                ></span>
+              </article>
+              <article class="summary-card">
+                <span class="summary-label">Peak gas (24h)</span>
+                <span class="summary-value" data-congestion-gas-peak>--</span>
+                <span
+                  class="summary-caption"
+                  data-congestion-gas-peak-time
+                ></span>
+              </article>
+              <article class="summary-card">
+                <span class="summary-label">Peak transactions (24h)</span>
+                <span class="summary-value" data-congestion-tx-peak>--</span>
+                <span
+                  class="summary-caption"
+                  data-congestion-tx-peak-time
+                ></span>
+              </article>
+            </div>
+          </section>
+
+          <section class="content-grid congestion-charts">
+            <div class="card chart-card">
+              <header class="card-header">
+                <div>
+                  <h2>Hourly gas price</h2>
+                  <p>
+                    Gwei-denominated base fee snapshots across the past 24
+                    hours.
+                  </p>
+                </div>
+              </header>
+              <div class="card__body chart-container">
+                <canvas id="congestion-gas-chart" height="300"></canvas>
+              </div>
+            </div>
+
+            <div class="card chart-card">
+              <header class="card-header">
+                <div>
+                  <h2>Hourly transaction load</h2>
+                  <p>
+                    Total transactions processed per hour over the last 24
+                    hours.
+                  </p>
+                </div>
+              </header>
+              <div class="card__body chart-container">
+                <canvas id="congestion-tx-chart" height="300"></canvas>
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="../scripts/network-congestion.js"></script>
+    <noscript>Enable JavaScript to track network congestion.</noscript>
+  </body>
+</html>

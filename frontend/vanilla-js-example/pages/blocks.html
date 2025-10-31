@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ethereum Blocks – Arkiv Insights</title>
+    <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+    <meta
+      name="description"
+      content="Monitor Ethereum network activity and gas prices using Arkiv - a universal, cost efficient data layer where you control your data on Ethereum."
+    />
+    <link rel="stylesheet" href="../styles/main.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="site-sidebar">
+        <div class="site-sidebar__content">
+          <div class="site-sidebar__brand">
+            <a class="brand-title" href="../index.html">Ethereum Insights</a>
+          </div>
+          <nav class="site-nav">
+            <ul class="nav__list">
+              <li>
+                <a class="nav__link" href="../index.html">Home</a>
+              </li>
+              <li>
+                <a class="nav__link" href="./blocks.html" aria-current="page">
+                  Ethereum Blocks
+                </a>
+              </li>
+              <li>
+                <a class="nav__link" href="./weekly-stats.html">Weekly Stats</a>
+              </li>
+              <li>
+                <a class="nav__link" href="./network-congestion.html">
+                  Network Congestion
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="site-sidebar__footer">
+          <span class="brand-badge">
+            Built with
+            <a
+              class="brand-badge__logo"
+              href="https://arkiv.network"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="../assets/arkiv-logo.svg" alt="Arkiv logo" />
+            </a>
+          </span>
+        </div>
+      </aside>
+
+      <div class="layout__main">
+        <main class="page-content">
+          <section class="content-grid content-grid--split blocks-view">
+            <div class="card card--table">
+              <header class="card-header">
+                <div>
+                  <h1>Latest Ethereum blocks</h1>
+                  <p>
+                    Follow the most recent blocks from the Ethereum blockchain
+                    stored on Arkiv. The feed refreshes automatically every
+                    minute.
+                  </p>
+                </div>
+                <span class="badge badge--accent">Live feed</span>
+              </header>
+
+              <div class="status-bar" aria-live="polite">
+                <span data-status data-variant="info"
+                  >Loading latest blocks...</span
+                >
+                <div class="status-actions">
+                  <span class="status-updated" data-last-updated></span>
+                  <button id="refresh-button" type="button">Refresh now</button>
+                </div>
+              </div>
+
+              <div class="table-section" aria-busy="false">
+                <table class="primary-table">
+                  <caption class="sr-only">
+                    Latest Ethereum blocks sourced from Arkiv
+                  </caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Block</th>
+                      <th scope="col">Timestamp</th>
+                      <th scope="col">Miner</th>
+                      <th scope="col">Tx Count</th>
+                      <th scope="col">Arkiv Entity</th>
+                    </tr>
+                  </thead>
+                  <tbody data-blocks>
+                    <tr class="placeholder-row">
+                      <td colspan="5">Waiting for data...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <aside class="card card--form" aria-live="polite">
+              <header class="card-header">
+                <div>
+                  <h2>Lookup a block</h2>
+                  <p>
+                    Retrieve detailed metadata for any block indexed by Arkiv
+                    using the block number.
+                  </p>
+                </div>
+                <span class="status-updated" data-block-last-updated></span>
+              </header>
+
+              <div class="card__body card__body--stack">
+                <form id="block-form" class="block-form">
+                  <div class="form-field">
+                    <label for="block-number">Block number</label>
+                    <div class="block-form__input-row">
+                      <input
+                        id="block-number"
+                        name="block-number"
+                        type="text"
+                        inputmode="numeric"
+                        pattern="[0-9]+"
+                        placeholder="Enter a block number"
+                        required
+                      />
+                      <button id="fetch-block" type="submit">
+                        Fetch details
+                      </button>
+                    </div>
+                  </div>
+                </form>
+
+                <p
+                  class="status-message block-status-message"
+                  data-block-status
+                  data-variant="info"
+                >
+                  Enter a block number to view its metadata.
+                </p>
+
+                <div
+                  class="details-grid details-grid--compact"
+                  data-block-details
+                  hidden
+                >
+                  <div class="details-item">
+                    <span class="details-label">Block number</span>
+                    <span
+                      class="details-value"
+                      data-field="block-number"
+                    ></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Timestamp</span>
+                    <span class="details-value" data-field="timestamp"></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Block hash</span>
+                    <span class="details-value" data-field="block-hash"></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Parent hash</span>
+                    <span class="details-value" data-field="parent-hash"></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Miner</span>
+                    <span class="details-value" data-field="miner"></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Transactions</span>
+                    <span
+                      class="details-value"
+                      data-field="transaction-count"
+                    ></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Gas used</span>
+                    <span class="details-value" data-field="gas-used"></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Gas limit</span>
+                    <span class="details-value" data-field="gas-limit"></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Gas price (wei)</span>
+                    <span class="details-value" data-field="gas-price"></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Base fee (wei)</span>
+                    <span class="details-value" data-field="base-fee"></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Size (bytes)</span>
+                    <span class="details-value" data-field="size"></span>
+                  </div>
+                  <div class="details-item">
+                    <span class="details-label">Arkiv entity</span>
+                    <span
+                      class="details-value"
+                      data-field="arkiv-entity"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="../scripts/blocks.js"></script>
+    <noscript>Enable JavaScript to load live block data.</noscript>
+  </body>
+</html>

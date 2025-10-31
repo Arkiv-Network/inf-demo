@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Arkiv Ethereum Insights</title>
+    <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+    <meta
+      name="description"
+      content="Monitor Ethereum network activity and gas prices using Arkiv - a universal, cost efficient data layer where you control your data on Ethereum."
+    />
+    <link rel="stylesheet" href="./styles/main.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="site-sidebar">
+        <div class="site-sidebar__content">
+          <div class="site-sidebar__brand">
+            <a class="brand-title" href="./index.html">Ethereum Insights</a>
+          </div>
+          <nav class="site-nav">
+            <ul class="nav__list">
+              <li>
+                <a class="nav__link" href="./index.html" aria-current="page">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a class="nav__link" href="pages/blocks.html"
+                  >Ethereum Blocks</a
+                >
+              </li>
+              <li>
+                <a class="nav__link" href="pages/weekly-stats.html"
+                  >Weekly Stats</a
+                >
+              </li>
+              <li>
+                <a class="nav__link" href="pages/network-congestion.html">
+                  Network Congestion
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div class="site-sidebar__footer">
+          <span class="brand-badge">
+            Built with
+            <a
+              class="brand-badge__logo"
+              href="https://arkiv.network"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src="./assets/arkiv-logo.svg" alt="Arkiv logo" />
+            </a>
+          </span>
+        </div>
+      </aside>
+
+      <div class="layout__main">
+        <main class="page-content page-content--home">
+          <div class="home-dashboard">
+            <header class="home-dashboard__header">
+              <div>
+                <h1>Ethereum Insights</h1>
+                <p>Real-time blockchain analytics powered by Arkiv</p>
+              </div>
+              <button id="home-refresh" type="button" class="refresh-button">
+                Refresh now
+              </button>
+            </header>
+
+            <div class="home-dashboard__content">
+              <section class="dashboard-section">
+                <h2 class="section-title">Network Highlights</h2>
+                <div class="metrics-grid">
+                  <article class="metric-card">
+                    <span class="metric-label">Latest Block</span>
+                    <a
+                      class="metric-value"
+                      data-metric-link="latest-block"
+                      href="#"
+                    >
+                      <span data-metric="latest-block">--</span>
+                    </a>
+                    <span class="metric-caption"
+                      >Most recent block on chain</span
+                    >
+                  </article>
+
+                  <article class="metric-card">
+                    <span class="metric-label">7-Day Avg Gas Price</span>
+                    <span class="metric-value" data-metric="avg-gas">--</span>
+                    <span class="metric-caption">Average over last 7 days</span>
+                  </article>
+
+                  <article class="metric-card">
+                    <span class="metric-label">Avg Daily Transactions</span>
+                    <span class="metric-value" data-metric="avg-daily-tx"
+                      >--</span
+                    >
+                    <span class="metric-caption">Average over last 7 days</span>
+                  </article>
+
+                  <article class="metric-card">
+                    <span class="metric-label">Current Gas Price</span>
+                    <span class="metric-value" data-metric="current-gas"
+                      >--</span
+                    >
+                    <span class="metric-caption"
+                      >Most recent hourly snapshot</span
+                    >
+                  </article>
+                </div>
+              </section>
+
+              <div class="dashboard-split">
+                <section class="dashboard-section">
+                  <h2 class="section-title">What you can explore</h2>
+                  <p class="section-description">
+                    This dashboard is a demo that showcases how to read the
+                    state of the Ethereum blockchain stored on Arkiv. Each page
+                    dives into a specific dataset without requiring React or
+                    backend services.
+                  </p>
+                  <ul class="feature-list">
+                    <li>
+                      Inspect the <strong>Ethereum Blocks</strong> view for a
+                      live block feed and on-demand block lookups.
+                    </li>
+                    <li>
+                      Compare <strong>Weekly Stats</strong> charts to understand
+                      gas prices and transaction throughput trends.
+                    </li>
+                    <li>
+                      Watch <strong>Network Congestion</strong> metrics update
+                      hourly to gauge pressure on fees and execution.
+                    </li>
+                  </ul>
+                </section>
+
+                <section class="dashboard-section">
+                  <h2 class="section-title">Quick links</h2>
+                  <p class="section-description">
+                    Dive straight into the data views that power this demo.
+                  </p>
+                  <nav class="quick-links">
+                    <a class="quick-link" href="pages/blocks.html">
+                      <span class="quick-link__title">Ethereum Blocks</span>
+                      <span class="quick-link__arrow">→</span>
+                    </a>
+                    <a class="quick-link" href="pages/weekly-stats.html">
+                      <span class="quick-link__title">Weekly Stats</span>
+                      <span class="quick-link__arrow">→</span>
+                    </a>
+                    <a class="quick-link" href="pages/network-congestion.html">
+                      <span class="quick-link__title">Network Congestion</span>
+                      <span class="quick-link__arrow">→</span>
+                    </a>
+                  </nav>
+                </section>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script type="module" src="./scripts/home.js"></script>
+    <noscript
+      >Enable JavaScript to load the latest Ethereum highlights.</noscript
+    >
+  </body>
+</html>
