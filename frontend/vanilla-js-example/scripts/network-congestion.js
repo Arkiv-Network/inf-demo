@@ -5,6 +5,8 @@ import {
   formatHourUTC,
   formatNumber,
 } from "./shared/formatters.js";
+import { Chart, registerables } from "https://esm.sh/chart.js@4.4.3?target=es2022&bundle-deps";
+Chart.register(...registerables);
 
 const summaryStatus = document.querySelector("[data-congestion-status]");
 const gasNowValue = document.querySelector("[data-congestion-gas-now]");
@@ -32,24 +34,6 @@ if (
   !txChartCanvas
 ) {
   throw new Error("Network congestion page is missing required elements");
-}
-
-let chartModulePromise = null;
-let chartLibraryRegistered = false;
-
-async function loadChartLibrary() {
-  if (!chartModulePromise) {
-    chartModulePromise = import(
-      "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.esm.js"
-    );
-  }
-
-  const { Chart, registerables } = await chartModulePromise;
-  if (!chartLibraryRegistered) {
-    Chart.register(...registerables);
-    chartLibraryRegistered = true;
-  }
-  return Chart;
 }
 
 function setSummaryStatus(message, variant = "info") {
@@ -122,14 +106,13 @@ function buildHourLabels(points) {
   return points.map((point) => `${formatHourUTC(point.timestamp)}\n${formatDateLabel(point.timestamp)}`);
 }
 
-async function renderCharts(points) {
+function renderCharts(points) {
   destroyCharts();
 
   if (!points.length) {
     return;
   }
 
-  const Chart = await loadChartLibrary();
   const labels = buildHourLabels(points);
   const gasData = points.map((point) => point.avgGasPrice / 1_000_000_000);
   const txData = points.map((point) => point.totalTransactionCount);
@@ -279,7 +262,7 @@ async function bootstrapNetworkCongestion() {
     }
 
     renderSummaries(recentPoints);
-    await renderCharts(recentPoints);
+    renderCharts(recentPoints);
     const latestTimestamp = recentPoints[recentPoints.length - 1]?.timestamp;
     if (Number.isFinite(latestTimestamp)) {
       setSummaryStatus(

@@ -4,6 +4,8 @@ import {
   formatGwei,
   formatNumber,
 } from "./shared/formatters.js";
+import { Chart, registerables } from "https://esm.sh/chart.js@4.4.3?target=es2022&bundle-deps";
+Chart.register(...registerables);
 
 const summaryStatus = document.querySelector("[data-summary-status]");
 const gasLatestValue = document.querySelector("[data-summary-gas-latest]");
@@ -27,25 +29,6 @@ if (
   !txChartCanvas
 ) {
   throw new Error("Weekly stats page is missing required elements");
-}
-
-// Ensure Chart.js loads only once across successive renders.
-let chartModulePromise = null;
-let chartLibraryRegistered = false;
-
-async function loadChartLibrary() {
-  if (!chartModulePromise) {
-    chartModulePromise = import(
-      "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.esm.js"
-    );
-  }
-
-  const { Chart, registerables } = await chartModulePromise;
-  if (!chartLibraryRegistered) {
-    Chart.register(...registerables);
-    chartLibraryRegistered = true;
-  }
-  return Chart;
 }
 
 function formatSummaryStatus(message, variant = "info") {
@@ -113,14 +96,13 @@ function destroyExistingCharts() {
   }
 }
 
-async function renderCharts(points) {
+function renderCharts(points) {
   destroyExistingCharts();
 
   if (!points.length) {
     return;
   }
 
-  const Chart = await loadChartLibrary();
   const labels = points.map((point) => formatDateLabel(point.timestamp));
   const gasData = points.map((point) => point.avgGasPrice / 1_000_000_000);
   const txData = points.map((point) => point.totalTransactionCount);
@@ -257,7 +239,7 @@ async function bootstrapWeeklyStats() {
     }
 
     renderSummaries(recentPoints);
-    await renderCharts(recentPoints);
+    renderCharts(recentPoints);
     const latestTimestamp = recentPoints[recentPoints.length - 1]?.timestamp;
     if (Number.isFinite(latestTimestamp)) {
       formatSummaryStatus(
