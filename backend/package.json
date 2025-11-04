@@ -10,10 +10,12 @@
 		"start": "bun run src/index.ts",
 		"build": "bun build src/index.ts --outdir dist --target bun",
 		"test": "bun test-api.ts",
-		"type-check": "tsc --noEmit"
+		"type-check": "tsc --noEmit",
+		"feed-history": "bun feedData.ts --history",
+		"feed-real-time": "bun feedData.ts --realTime"
 	},
 	"dependencies": {
-		"@arkiv-network/sdk": "0.0.36-dev.4",
+		"@arkiv-network/sdk": "0.0.36-dev.6",
 		"@hono/node-server": "^1.8.0",
 		"@biomejs/biome": "2.2.4",
 		"hono": "^4.0.0",
