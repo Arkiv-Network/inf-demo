@@ -50,9 +50,10 @@ const arkivClient = createArkivClient({
 
 async function storeLatestBlockNumber(blockNumber: bigint) {
 	await arkivClient.createEntity({
+		contentType: "application/json",
 		expiresIn: MONTH_IN_SECONDS,
 		payload: stringToPayload(blockNumber.toString()),
-		annotations: [
+		attributes: [
 			{
 				key: "project",
 				value: "InfDemo",
@@ -83,8 +84,9 @@ async function updateLatestBlockNumber(blockNumber: bigint) {
 	await arkivClient.updateEntity({
 		entityKey: latestBlockNumberEntity.key,
 		expiresIn: MONTH_IN_SECONDS,
+		contentType: "application/json",
 		payload: stringToPayload(blockNumber.toString()),
-		annotations: [
+		attributes: [
 			{
 				key: "project",
 				value: "InfDemo",
@@ -140,7 +142,8 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 						miner: block.miner,
 						size: block.size.toString(),
 					}),
-					annotations: [
+					contentType: "application/json",
+					attributes: [
 						{
 							key: "project",
 							value: "InfDemo",
@@ -277,11 +280,12 @@ export async function storeAggregatedData(
 ) {
 	const receipt = await arkivClient.createEntity({
 		expiresIn: aggType === "hourly" ? WEEK_IN_SECONDS : MONTH_IN_SECONDS,
+		contentType: "application/json",
 		payload: jsonToPayload({
 			totalTransactionCount: aggregatedData.totalTransactionCount,
 			avgGasPrice: aggregatedData.avgGasPrice.toString(),
 		}),
-		annotations: [
+		attributes: [
 			{
 				key: "project",
 				value: "InfDemo",
