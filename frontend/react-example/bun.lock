@@ -4,7 +4,7 @@
     "": {
       "name": "react-example",
       "dependencies": {
-        "@arkiv-network/sdk": "0.0.36-dev.4",
+        "@arkiv-network/sdk": "0.1.1-dev.0",
         "@radix-ui/react-slot": "^1.2.3",
         "@tailwindcss/vite": "^4.1.16",
         "@tanstack/react-query": "^5.90.5",
@@ -40,7 +40,7 @@
   "packages": {
     "@adraffy/ens-normalize": ["@adraffy/ens-normalize@1.11.1", "", {}, "sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ=="],
 
-    "@arkiv-network/sdk": ["@arkiv-network/sdk@0.0.36-dev.4", "", { "dependencies": { "viem": "^2.38.2" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-KkNHmRmXqyOHoZkku4sbyxhD/1o4oNNGi6Q0NslcxaGeQV752cIS2BEoWcDW568/uT30PLYVI6fOdvOrw18Fjg=="],
+    "@arkiv-network/sdk": ["@arkiv-network/sdk@0.1.1-dev.0", "", { "dependencies": { "brotli-wasm": "^3.0.1", "viem": "^2.38.2" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-vAXzZDitvYB4YkmbAVQBdF/+Hr1qTt0Prhgdfdf9StDn4Y60EhaJE4nNc12OnDN5pYXIgIqBYW2Doj5TNCP0wA=="],
 
     "@babel/code-frame": ["@babel/code-frame@7.27.1", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.27.1", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg=="],
 
@@ -353,6 +353,8 @@
     "brace-expansion": ["brace-expansion@1.1.12", "", { "dependencies": { "balanced-match": "^1.0.0", "concat-map": "0.0.1" } }, "sha512-9T9UjW3r0UW5c1Q7GTwllptXwhvYmEzFhzMfZ9H7FQWt+uZePjZPjBP/W1ZEyZ1twGWom5/56TF4lPcqjnDHcg=="],
 
     "braces": ["braces@3.0.3", "", { "dependencies": { "fill-range": "^7.1.1" } }, "sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA=="],
+
+    "brotli-wasm": ["brotli-wasm@3.0.1", "", {}, "sha512-U3K72/JAi3jITpdhZBqzSUq+DUY697tLxOuFXB+FpAE/Ug+5C3VZrv4uA674EUZHxNAuQ9wETXNqQkxZD6oL4A=="],
 
     "browserslist": ["browserslist@4.27.0", "", { "dependencies": { "baseline-browser-mapping": "^2.8.19", "caniuse-lite": "^1.0.30001751", "electron-to-chromium": "^1.5.238", "node-releases": "^2.0.26", "update-browserslist-db": "^1.1.4" }, "bin": { "browserslist": "cli.js" } }, "sha512-AXVQwdhot1eqLihwasPElhX2tAZiBjWdJ9i/Zcj2S6QYIjkx62OKSfnobkriB81C3l4w0rVy3Nt4jaTBltYEpw=="],
 
