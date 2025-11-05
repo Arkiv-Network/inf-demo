@@ -4,7 +4,7 @@
     "": {
       "name": "infura-demo-backend",
       "dependencies": {
-        "@arkiv-network/sdk": "0.1.1-dev.0",
+        "@arkiv-network/sdk": "file:./arkiv-network-sdk-latest.tgz",
         "@biomejs/biome": "2.2.4",
         "@hono/node-server": "^1.8.0",
         "hono": "^4.0.0",
@@ -21,7 +21,7 @@
   "packages": {
     "@adraffy/ens-normalize": ["@adraffy/ens-normalize@1.11.1", "", {}, "sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ=="],
 
-    "@arkiv-network/sdk": ["@arkiv-network/sdk@0.1.1-dev.0", "", { "dependencies": { "brotli-wasm": "^3.0.1", "viem": "^2.38.2" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-vAXzZDitvYB4YkmbAVQBdF/+Hr1qTt0Prhgdfdf9StDn4Y60EhaJE4nNc12OnDN5pYXIgIqBYW2Doj5TNCP0wA=="],
+    "@arkiv-network/sdk": ["@arkiv-network/sdk@./arkiv-network-sdk-latest.tgz", { "dependencies": { "brotli-wasm": "^3.0.1", "viem": "^2.38.2" }, "peerDependencies": { "typescript": "^5.0.0" } }],
 
     "@biomejs/biome": ["@biomejs/biome@2.2.4", "", { "optionalDependencies": { "@biomejs/cli-darwin-arm64": "2.2.4", "@biomejs/cli-darwin-x64": "2.2.4", "@biomejs/cli-linux-arm64": "2.2.4", "@biomejs/cli-linux-arm64-musl": "2.2.4", "@biomejs/cli-linux-x64": "2.2.4", "@biomejs/cli-linux-x64-musl": "2.2.4", "@biomejs/cli-win32-arm64": "2.2.4", "@biomejs/cli-win32-x64": "2.2.4" }, "bin": { "biome": "bin/biome" } }, "sha512-TBHU5bUy/Ok6m8c0y3pZiuO/BZoY/OcGxoLlrfQof5s8ISVwbVBdFINPQZyFfKwil8XibYWb7JMwnT8wT4WVPg=="],
 

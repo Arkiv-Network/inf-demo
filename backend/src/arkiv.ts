@@ -120,8 +120,15 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 	let latestEthBlockNumber = 0n;
 	const batchSize = 100;
 	// store blocks in batches of 100
+	console.info(
+		"Storing blocks in batches of:",
+		batchSize,
+		"blocks to store:",
+		blocks.length,
+	);
 	for (let i = 0; i < blocks.length; i += batchSize) {
 		const batch = blocks.slice(i, i + batchSize);
+		console.info("Storing batch of:", batch.length, "blocks");
 		const receipt = await arkivClient.mutateEntities({
 			creates: batch.map((block) => {
 				const blockNumber = block.number ?? 0n;

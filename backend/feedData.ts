@@ -18,7 +18,7 @@ import {
 } from "./src/arkiv";
 import { getBlock as getEthBlock, getGasPrice } from "./src/eth";
 
-console.debug = () => {};
+// console.debug = () => {};
 
 //
 // Historical feed
