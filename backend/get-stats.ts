@@ -3,7 +3,7 @@ import {
 	getBlocksSinceTimestamp,
 } from "./src/arkiv";
 
-console.info = () => {};
+//console.info = () => {};
 console.debug = () => {};
 
 async function getStats() {
@@ -18,11 +18,11 @@ async function getStats() {
 async function getBlocks() {
 	const blocks = await getBlocksSinceTimestamp(0);
 	for (const block of blocks) {
-		console.log(
-			block.transactionCount,
-			block.blockNumber,
-			new Date(block.timestamp * 1000).toISOString(),
-		);
+		// console.log(
+		// 	block.transactionCount,
+		// 	block.blockNumber,
+		// 	new Date(block.timestamp * 1000).toISOString(),
+		// );
 	}
 	console.log(`Total blocks: ${blocks.length}`);
 }

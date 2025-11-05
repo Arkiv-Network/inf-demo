@@ -116,7 +116,7 @@ async function getLatestBlockNumberEntity(): Promise<Entity | null> {
 
 export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 	let latestEthBlockNumber = 0n;
-	const batchSize = 10;
+	const batchSize = 100;
 	// store blocks in batches of 100
 	for (let i = 0; i < blocks.length; i += batchSize) {
 		const batch = blocks.slice(i, i + batchSize);
@@ -261,6 +261,7 @@ export async function getBlocksSinceTimestamp(
 	const entities = [];
 	const result = await query.fetch();
 	entities.push(...result.entities);
+
 	while (result.hasNextPage()) {
 		await result.next();
 		entities.push(...result.entities);

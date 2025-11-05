@@ -1,11 +1,11 @@
 import { createPublicClient, type Hex, http } from "viem";
 import { mainnet } from "viem/chains";
 
+console.info("ETH_RPC_URL", process.env.ETH_RPC_URL);
 const ethClient = createPublicClient({
 	chain: mainnet,
 	transport: process.env.ETH_RPC_URL ? http(process.env.ETH_RPC_URL) : http(),
 });
-console.info("ETH_RPC_URL", process.env.ETH_RPC_URL);
 
 export async function getBlock(hash?: Hex, blockNumber?: bigint) {
 	// do 3 retries
