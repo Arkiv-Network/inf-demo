@@ -1,5 +1,5 @@
-import { createPublicClient, http } from "https://esm.sh/@arkiv-network/sdk@0.0.36-dev.4?target=es2022&bundle-deps";
-import { eq, gte } from "https://esm.sh/@arkiv-network/sdk@0.0.36-dev.4/query?target=es2022&bundle-deps";
+import { createPublicClient, http } from "https://esm.sh/@arkiv-network/sdk@0.3.2-dev.1?target=es2022&bundle-deps";
+import { eq, gte } from "https://esm.sh/@arkiv-network/sdk@0.3.2-dev.1/query?target=es2022&bundle-deps";
 
 const ARKIV_CHAIN = {
   id: 60138453045,
@@ -71,16 +71,15 @@ function normalizeBlockDetail(entity) {
 }
 
 async function fetchLatestBlocks() {
-  const fiveMinutesAgo = Math.floor(Date.now() / 1000 - 5 * 60);
-
   const response = await client
     .buildQuery()
     .where([
       eq("project", "InfDemo"),
       eq("InfDemo_version", PROTOCOL_VERSION),
       eq("InfDemo_dataType", "blockdata"),
-      gte("InfDemo_blockTimestamp", fiveMinutesAgo),
     ])
+    .limit(10)
+    .orderBy("InfDemo_blockTimestamp", "number", true)
     .ownedBy(ENTITY_OWNER)
     .withPayload()
     .fetch();
@@ -97,9 +96,7 @@ async function fetchLatestBlocks() {
     throw new Error("No latest blocks available in Arkiv");
   }
 
-  blocks.sort((a, b) => Number(b.blockNumber) - Number(a.blockNumber));
-
-  return blocks.slice(0, 10);
+  return blocks;
 }
 
 async function fetchBlockDetails(blockNumber) {
@@ -151,7 +148,7 @@ async function fetchStats(timeframe) {
     .limit(timeframe === "daily" ? 30 : 7 * 24)
     .ownedBy(ENTITY_OWNER)
     .withPayload()
-    .withAnnotations()
+    .withAttributes()
     .fetch();
 
   if (!response || !Array.isArray(response.entities)) {
@@ -162,10 +159,10 @@ async function fetchStats(timeframe) {
 
   for (const entity of response.entities) {
     try {
-      const annotations = Array.isArray(entity.annotations)
-        ? entity.annotations
+      const attributes = Array.isArray(entity.attributes)
+        ? entity.attributes
         : [];
-      const timestampAnnotation = annotations.find(
+      const timestampAnnotation = attributes.find(
         (annotation) => annotation.key === "InfDemo_statsTimestamp"
       );
       const timestamp = Number(timestampAnnotation?.value ?? 0);

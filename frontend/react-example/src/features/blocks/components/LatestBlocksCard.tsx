@@ -108,7 +108,7 @@ export function LatestBlocksCard({ className }: LatestBlocksCardProps) {
             <CardTitle className="text-xl">Latest Blocks</CardTitle>
             <CardDescription>
               Real-time snapshots of the most recent blocks mined on Ethereum.
-              Refreshes every 60 seconds.
+              Refreshes every 15 seconds.
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
