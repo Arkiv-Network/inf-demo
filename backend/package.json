@@ -1,29 +1,31 @@
 {
-  "name": "infura-demo-backend",
-  "version": "1.0.0",
-  "description": "Hono.js backend for Infura demo",
-  "main": "src/index.ts",
-  "scripts": {
-    "dev": "bun run --hot src/index.ts",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "start": "bun run src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target bun",
-    "test": "bun test-api.ts",
-    "type-check": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@arkiv-network/sdk": "0.0.36-dev.4",
-    "@hono/node-server": "^1.8.0",
-    "@biomejs/biome": "2.2.4",
-    "hono": "^4.0.0",
-    "viem": "^2.38.5",
-    "zod": "^4.1.12"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.0.0",
-    "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
-  },
-  "type": "module"
+	"name": "infura-demo-backend",
+	"version": "0.1.0",
+	"description": "Hono.js backend for Infura demo",
+	"main": "src/index.ts",
+	"scripts": {
+		"dev": "bun run --hot src/index.ts",
+		"lint": "biome check .",
+		"lint:fix": "biome check --write .",
+		"start": "bun run src/index.ts",
+		"build": "bun build src/index.ts --outdir dist --target bun",
+		"test": "bun test-api.ts",
+		"type-check": "tsc --noEmit",
+		"feed-history": "bun feedData.ts --history",
+		"feed-real-time": "bun feedData.ts --realTime"
+	},
+	"dependencies": {
+		"@arkiv-network/sdk": "0.3.2-dev.1",
+		"@biomejs/biome": "2.2.4",
+		"@hono/node-server": "^1.8.0",
+		"hono": "^4.0.0",
+		"viem": "^2.38.5",
+		"zod": "^4.1.12"
+	},
+	"devDependencies": {
+		"@types/bun": "^1.0.0",
+		"@types/node": "^20.0.0",
+		"typescript": "^5.0.0"
+	},
+	"type": "module"
 }

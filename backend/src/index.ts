@@ -1,13 +1,11 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import {
-	getBlock as getBlockOnArkiv,
-	getLatestBlockNumber,
-	storeBlock,
-} from "./arkiv";
+import { aggregateDataLastDay, aggregateDataLastHour } from "./aggregate";
+import { getLatestBlockNumber, storeBlocks } from "./arkiv";
 import { getBlock as getBlockOnEth, getGasPrice } from "./eth";
 
 const app = new Hono();
+
 // Enable CORS for all routes
 app.use("*", cors());
 
@@ -21,14 +19,14 @@ app.get("/", (c) => {
 });
 
 // collectData endpoint
-app.post("/collectData", async (c) => {
+app.get("/collectData", async (c) => {
 	try {
 		let latestBlockOnEth = await getBlockOnEth();
 		const latestBlockNumberOnArkiv = await getLatestBlockNumber();
 		const gasPrice = await getGasPrice();
 		console.info(
 			"latestBlockOnEth",
-			latestBlockOnEth,
+			latestBlockOnEth?.number,
 			"latestBlockOnArkiv",
 			latestBlockNumberOnArkiv,
 			"gasPrice",
@@ -40,9 +38,10 @@ app.post("/collectData", async (c) => {
 			"Filling missed blocks between latestBlockOnEth and latestBlockOnArkiv",
 		);
 		let done = latestBlockOnEth.number === latestBlockNumberOnArkiv;
+		const blocksToStore = [];
 		while (!done) {
-			await storeBlock(latestBlockOnEth, gasPrice);
-			console.info("Block stored successfully:", latestBlockOnEth.number);
+			blocksToStore.push(latestBlockOnEth);
+			console.info("Block to store added:", latestBlockOnEth.number);
 			if (
 				!latestBlockNumberOnArkiv ||
 				latestBlockOnEth.number - 1n === latestBlockNumberOnArkiv
@@ -50,9 +49,14 @@ app.post("/collectData", async (c) => {
 				done = true;
 			} else {
 				latestBlockOnEth = await getBlockOnEth(latestBlockOnEth.parentHash);
-				console.info("Get parent block to store next", latestBlockOnEth);
+				console.info("Get parent block to store next", latestBlockOnEth.number);
 			}
 		}
+		await storeBlocks(blocksToStore, gasPrice);
+		console.info(
+			"Blocks stored successfully. Amount of blocks stored:",
+			blocksToStore.length,
+		);
 
 		return c.json({
 			success: true,
@@ -72,9 +76,16 @@ app.post("/collectData", async (c) => {
 // aggregateData endpoint
 app.get("/aggregateData", async (c) => {
 	try {
+		const aggregatedData = await aggregateDataLastHour();
+		const dailyAggregatedData = await aggregateDataLastDay();
 		return c.json({
 			success: true,
-			data: "Aggregated data",
+			data: {
+				totalTransactionCount: aggregatedData.totalTransactionCount,
+				avgGasPrice: aggregatedData.avgGasPrice.toString(),
+				totalTransactionCountDaily: dailyAggregatedData.totalTransactionCount,
+				avgGasPriceDaily: dailyAggregatedData.avgGasPrice.toString(),
+			},
 		});
 	} catch (error) {
 		console.error("Error in aggregateData:", error);
@@ -115,4 +126,5 @@ console.log(`🚀 Server starting on port ${port}`);
 export default {
 	port,
 	fetch: app.fetch,
+	idleTimeout: 120,
 };
