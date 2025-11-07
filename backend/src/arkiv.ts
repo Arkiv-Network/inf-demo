@@ -1,5 +1,6 @@
 import {
-	createWalletClient as createArkivClient,
+	createWalletClient,
+	createPublicClient,
 	type Entity,
 	http,
 } from "@arkiv-network/sdk";
@@ -42,14 +43,19 @@ const chains = {
 	}),
 } as Record<string, Chain>;
 
-const arkivClient = createArkivClient({
+const arkivWalletClient = createWalletClient({
 	chain: chains[process.env.ARKIV_CHAIN as keyof typeof chains],
 	transport: http(),
 	account: privateKeyToAccount(process.env.ARKIV_PRIVATE_KEY as `0x${string}`),
 });
 
+const arkivPublicClient = createPublicClient({
+	chain: chains[process.env.ARKIV_CHAIN as keyof typeof chains],
+	transport: http(),
+});
+
 async function storeLatestBlockNumber(blockNumber: bigint) {
-	await arkivClient.createEntity({
+	await arkivWalletClient.createEntity({
 		contentType: "application/json",
 		expiresIn: MONTH_IN_SECONDS,
 		payload: stringToPayload(blockNumber.toString()),
@@ -81,7 +87,7 @@ async function updateLatestBlockNumber(blockNumber: bigint) {
 		"to:",
 		blockNumber,
 	);
-	await arkivClient.updateEntity({
+	await arkivWalletClient.updateEntity({
 		entityKey: latestBlockNumberEntity.key,
 		expiresIn: MONTH_IN_SECONDS,
 		contentType: "application/json",
@@ -103,7 +109,7 @@ async function updateLatestBlockNumber(blockNumber: bigint) {
 	});
 }
 async function getLatestBlockNumberEntity(): Promise<Entity | null> {
-	const result = await arkivClient
+	const result = await arkivPublicClient
 		.buildQuery()
 		.where([
 			eq("project", "InfDemo"),
@@ -129,7 +135,7 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 	for (let i = 0; i < blocks.length; i += batchSize) {
 		const batch = blocks.slice(i, i + batchSize);
 		console.info("Storing batch of:", batch.length, "blocks");
-		const receipt = await arkivClient.mutateEntities({
+		const receipt = await arkivWalletClient.mutateEntities({
 			creates: batch.map((block) => {
 				const blockNumber = block.number ?? 0n;
 				if (blockNumber > latestEthBlockNumber) {
@@ -225,7 +231,7 @@ export async function getBlock(blockNumber?: number): Promise<Entity | null> {
 	).address;
 	console.debug("storeOwnerAddress", storeOwnerAddress);
 	try {
-		const query = await arkivClient
+		const query = await arkivPublicClient
 			.buildQuery()
 			.ownedBy(storeOwnerAddress)
 			.limit(1)
@@ -251,10 +257,10 @@ export async function getBlocksSinceTimestamp(
 	timestamp: number,
 	endTimestamp?: number,
 ): Promise<BlockSchema[]> {
-	const lastBlockNumber = await arkivClient.getBlockNumber();
+	const lastBlockNumber = await arkivPublicClient.getBlockNumber();
 	console.warn("Last block number:", lastBlockNumber.toString());
-	const limit = 1000;
-	const query = await arkivClient
+	const limit = 100;
+	const query = await arkivPublicClient
 		.buildQuery()
 		.where([
 			eq("project", "InfDemo"),
@@ -269,11 +275,19 @@ export async function getBlocksSinceTimestamp(
 		query.where([lte("InfDemo_blockTimestamp", endTimestamp)]);
 	}
 	const entities = [];
+	// measure time taken to fetch first page in seconds
+	const startTime = Date.now();
 	const result = await query.fetch();
 	entities.push(...result.entities);
-
+	const endTime = Date.now();
+	console.info("Time taken to fetch first page:", (endTime - startTime) / 1000, "seconds");
+	console.info("Entities fetched:", result.entities.length);
 	while (result.hasNextPage()) {
+		console.info("Fetching next page...");
+		const startTime = Date.now();
 		await result.next();
+		const endTime = Date.now();
+		console.info("Time taken to fetch next page:", result.entities.length, "entities in", result.cursor, "cursor in", (endTime - startTime) / 1000, "seconds");
 		entities.push(...result.entities);
 	}
 	console.info("Blocks found:", entities.length);
@@ -285,7 +299,7 @@ export async function storeAggregatedData(
 	timestamp: number,
 	aggType: AggregatedDataType,
 ) {
-	const receipt = await arkivClient.createEntity({
+	const receipt = await arkivWalletClient.createEntity({
 		expiresIn: aggType === "hourly" ? WEEK_IN_SECONDS : MONTH_IN_SECONDS,
 		contentType: "application/json",
 		payload: jsonToPayload({
@@ -329,7 +343,7 @@ export async function getAggregatedDataSinceTimestamp({
 	endTimestamp?: number;
 	aggType: AggregatedDataType;
 }): Promise<AggregatedDataSchema[]> {
-	const query = await arkivClient
+	const query = await arkivPublicClient
 		.buildQuery()
 		.where([
 			eq("project", "InfDemo"),
