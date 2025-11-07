@@ -7,9 +7,9 @@ import {
 import { privateKeyToAccount } from "@arkiv-network/sdk/accounts";
 import { kaolin, localhost } from "@arkiv-network/sdk/chains";
 import { eq, gt, lte } from "@arkiv-network/sdk/query";
-import { jsonToPayload, stringToPayload } from "@arkiv-network/sdk/utils";
+import { jsonToPayload } from "@arkiv-network/sdk/utils";
 import type { Block, Chain } from "viem";
-import { defineChain, hexToString } from "viem";
+import { defineChain } from "viem";
 import {
 	type AggregatedDataSchema,
 	aggregatedDataSchema,
@@ -53,74 +53,6 @@ const arkivPublicClient = createPublicClient({
 	chain: chains[process.env.ARKIV_CHAIN as keyof typeof chains],
 	transport: http(),
 });
-
-async function storeLatestBlockNumber(blockNumber: bigint) {
-	await arkivWalletClient.createEntity({
-		contentType: "application/json",
-		expiresIn: MONTH_IN_SECONDS,
-		payload: stringToPayload(blockNumber.toString()),
-		attributes: [
-			{
-				key: "project",
-				value: "InfDemo",
-			},
-			{
-				key: "InfDemo_dataType",
-				value: "blocknumber",
-			},
-			{
-				key: "InfDemo_version",
-				value: DATA_VERSION,
-			},
-		],
-	});
-}
-
-async function updateLatestBlockNumber(blockNumber: bigint) {
-	const latestBlockNumberEntity = await getLatestBlockNumberEntity();
-	if (!latestBlockNumberEntity) {
-		throw new Error("Latest block number entity not found");
-	}
-	console.info(
-		"Updating latest block number:",
-		latestBlockNumberEntity.toText(),
-		"to:",
-		blockNumber,
-	);
-	await arkivWalletClient.updateEntity({
-		entityKey: latestBlockNumberEntity.key,
-		expiresIn: MONTH_IN_SECONDS,
-		contentType: "application/json",
-		payload: stringToPayload(blockNumber.toString()),
-		attributes: [
-			{
-				key: "project",
-				value: "InfDemo",
-			},
-			{
-				key: "InfDemo_dataType",
-				value: "blocknumber",
-			},
-			{
-				key: "InfDemo_version",
-				value: DATA_VERSION,
-			},
-		],
-	});
-}
-async function getLatestBlockNumberEntity(): Promise<Entity | null> {
-	const result = await arkivPublicClient
-		.buildQuery()
-		.where([
-			eq("project", "InfDemo"),
-			eq("InfDemo_dataType", "blocknumber"),
-			eq("InfDemo_version", DATA_VERSION),
-		])
-		.limit(1)
-		.withPayload()
-		.fetch();
-	return result.entities.length > 0 ? result.entities[0] : null;
-}
 
 export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 	let latestEthBlockNumber = 0n;
@@ -196,33 +128,25 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 	console.info("Latest Ethereum block number:", latestEthBlockNumber);
 }
 
+async function getLatestOrOldestBlockNumber(latest: boolean): Promise<bigint> {
+	const query = await arkivPublicClient.buildQuery()
+		.where([
+			eq("project", "InfDemo"),
+			eq("InfDemo_dataType", "blockdata"),
+			eq("InfDemo_version", DATA_VERSION)
+		])
+		.limit(1)
+		.withAttributes()
+		.orderBy("InfDemo_blockNumber", "string", latest)
+		.fetch();
+	return query.entities.length > 0 ? BigInt(query.entities[0].attributes.find((attribute) => attribute.key === "InfDemo_blockNumber")?.value) : 0n;
+}
 export async function getLatestBlockNumber(): Promise<bigint> {
-	const last1day = Math.floor(Date.now() / 1000) - 60 * 60 * 24; // last 24 hours
-	console.info(
-		"Getting latest block number for last 24 hours, timestamp:",
-		new Date(last1day * 1000).toISOString(),
-	);
-	const blocks = await getBlocksSinceTimestamp(last1day);
-	console.info("Blocks found for last 24 hours:", blocks.length);
-	// get highest block number
-	const highestBlockNumber = blocks.reduce(
-		(max, block) => (max > block.blockNumber ? max : block.blockNumber),
-		0n,
-	);
-	return highestBlockNumber;
+	return getLatestOrOldestBlockNumber(true);
 }
 
-export async function getOldestBlockNumber() {
-	const last30days = Math.floor(Date.now() / 1000) - 60 * 60 * 24 * 30; // last 30 days
-	const blocks = await getBlocksSinceTimestamp(last30days);
-	console.info("Blocks found:", blocks.length);
-
-	// get lowest block number
-	const lowestBlockNumber = blocks.reduce(
-		(min, block) => (min < block.blockNumber ? min : block.blockNumber),
-		BigInt(Number.MAX_SAFE_INTEGER),
-	);
-	return blocks.length > 0 ? lowestBlockNumber : 0n;
+export async function getOldestBlockNumber(): Promise<bigint> {
+	return getLatestOrOldestBlockNumber(false);
 }
 
 export async function getBlock(blockNumber?: number): Promise<Entity | null> {
@@ -259,7 +183,7 @@ export async function getBlocksSinceTimestamp(
 ): Promise<BlockSchema[]> {
 	const lastBlockNumber = await arkivPublicClient.getBlockNumber();
 	console.warn("Last block number:", lastBlockNumber.toString());
-	const limit = 100;
+	const limit = 1000;
 	const query = await arkivPublicClient
 		.buildQuery()
 		.where([
@@ -269,25 +193,15 @@ export async function getBlocksSinceTimestamp(
 			eq("InfDemo_version", DATA_VERSION),
 		])
 		.withPayload()
-		//.validAtBlock(lastBlockNumber - 2n)
 		.limit(limit);
 	if (endTimestamp) {
 		query.where([lte("InfDemo_blockTimestamp", endTimestamp)]);
 	}
 	const entities = [];
-	// measure time taken to fetch first page in seconds
-	const startTime = Date.now();
 	const result = await query.fetch();
 	entities.push(...result.entities);
-	const endTime = Date.now();
-	console.info("Time taken to fetch first page:", (endTime - startTime) / 1000, "seconds");
-	console.info("Entities fetched:", result.entities.length);
 	while (result.hasNextPage()) {
-		console.info("Fetching next page...");
-		const startTime = Date.now();
 		await result.next();
-		const endTime = Date.now();
-		console.info("Time taken to fetch next page:", result.entities.length, "entities in", result.cursor, "cursor in", (endTime - startTime) / 1000, "seconds");
 		entities.push(...result.entities);
 	}
 	console.info("Blocks found:", entities.length);

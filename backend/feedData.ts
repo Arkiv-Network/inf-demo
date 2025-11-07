@@ -36,14 +36,14 @@ async function feedHistory(numBlocks: number) {
 		oldestBlockNumber = latestBlock.number;
 	}
 	console.log(
-		`📦 Oldest stored Ethereum block: ${oldestBlockNumber.toString()}`,
+		`📦 Oldest stored Ethereum block: ${oldestBlockNumber?.toString()}`,
 	);
 
 	try {
 		const blocksToStore: Block[] = [];
 		const storedBlocks: Block[] = [];
 		const batchSize = 100;
-		let currentBlockNumber = oldestBlockNumber - 1n;
+		let currentBlockNumber = oldestBlockNumber ? oldestBlockNumber - 1n : 0n;
 
 		const gasPrice = await getGasPrice();
 		console.log(`\n📥 Fetching ${numBlocks} blocks...`);

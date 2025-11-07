@@ -1,6 +1,8 @@
 import {
 	getAggregatedDataSinceTimestamp,
 	getBlocksSinceTimestamp,
+	getLatestBlockNumber,
+	getOldestBlockNumber,
 } from "./src/arkiv";
 
 //console.info = () => {};
@@ -16,15 +18,22 @@ async function getStats() {
 }
 
 async function getBlocks() {
-	const blocks = await getBlocksSinceTimestamp(0);
-	for (const block of blocks) {
-		// console.log(
-		// 	block.transactionCount,
-		// 	block.blockNumber,
-		// 	new Date(block.timestamp * 1000).toISOString(),
-		// );
-	}
-	console.log(`Total blocks: ${blocks.length}`);
+	// Last stored block number
+	const lastStoredBlockNumber = await getLatestBlockNumber();
+	console.log("Last stored block number:", lastStoredBlockNumber);
+
+	const oldestBlockNumber = await getOldestBlockNumber();
+	console.log("Oldest block number:", oldestBlockNumber);
+
+	// const blocks = await getBlocksSinceTimestamp(0);
+	// for (const block of blocks) {
+	// 	// console.log(
+	// 	// 	block.transactionCount,
+	// 	// 	block.blockNumber,
+	// 	// 	new Date(block.timestamp * 1000).toISOString(),
+	// 	// );
+	// }
+	//console.log(`Total blocks: ${blocks.length}`);
 }
 
 getStats();
