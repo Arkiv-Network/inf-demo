@@ -25,15 +25,15 @@ async function getBlocks() {
 	const oldestBlockNumber = await getOldestBlockNumber();
 	console.log("Oldest block number:", oldestBlockNumber);
 
-	// const blocks = await getBlocksSinceTimestamp(0);
+	const blocks = await getBlocksSinceTimestamp(0);
 	// for (const block of blocks) {
-	// 	// console.log(
-	// 	// 	block.transactionCount,
-	// 	// 	block.blockNumber,
-	// 	// 	new Date(block.timestamp * 1000).toISOString(),
-	// 	// );
+	// console.log(
+	// 	blocks[0].transactionCount,
+	// 	block.blockNumber,
+	// 	new Date(block.timestamp * 1000).toISOString(),
+	// );
 	// }
-	//console.log(`Total blocks: ${blocks.length}`);
+	console.log(`Total blocks: ${blocks.length}`);
 }
 
 getStats();

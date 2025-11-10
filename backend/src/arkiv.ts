@@ -1,6 +1,6 @@
 import {
-	createWalletClient,
 	createPublicClient,
+	createWalletClient,
 	type Entity,
 	http,
 } from "@arkiv-network/sdk";
@@ -19,7 +19,7 @@ import {
 
 const MONTH_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const WEEK_IN_SECONDS = 60 * 60 * 24 * 7; // 7 days
-const DATA_VERSION = "0.7";
+const DATA_VERSION = "0.8";
 
 type AggregatedDataType = "hourly" | "daily";
 
@@ -91,30 +91,30 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 					attributes: [
 						{
 							key: "project",
-							value: "InfDemo",
+							value: "EthDemo",
 						},
 						{
-							key: "InfDemo_blockNumber",
+							key: "EthDemo_blockNumber",
 							value: block.number?.toString() ?? "",
 						},
 						{
-							key: "InfDemo_blockHash",
+							key: "EthDemo_blockHash",
 							value: block.hash ?? "",
 						},
 						{
-							key: "InfDemo_blockGasPrice",
+							key: "EthDemo_blockGasPrice",
 							value: Number(gasPrice),
 						},
 						{
-							key: "InfDemo_blockTimestamp",
+							key: "EthDemo_blockTimestamp",
 							value: Number(block.timestamp),
 						},
 						{
-							key: "InfDemo_dataType",
+							key: "EthDemo_dataType",
 							value: "blockdata",
 						},
 						{
-							key: "InfDemo_version",
+							key: "EthDemo_version",
 							value: DATA_VERSION,
 						},
 					],
@@ -129,17 +129,24 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 }
 
 async function getLatestOrOldestBlockNumber(latest: boolean): Promise<bigint> {
-	const query = await arkivPublicClient.buildQuery()
+	const query = await arkivPublicClient
+		.buildQuery()
 		.where([
-			eq("project", "InfDemo"),
-			eq("InfDemo_dataType", "blockdata"),
-			eq("InfDemo_version", DATA_VERSION)
+			eq("project", "EthDemo"),
+			eq("EthDemo_dataType", "blockdata"),
+			eq("EthDemo_version", DATA_VERSION),
 		])
 		.limit(1)
 		.withAttributes()
-		.orderBy("InfDemo_blockNumber", "string", latest)
+		.orderBy("EthDemo_blockNumber", "string", latest)
 		.fetch();
-	return query.entities.length > 0 ? BigInt(query.entities[0].attributes.find((attribute) => attribute.key === "InfDemo_blockNumber")?.value) : 0n;
+	return query.entities.length > 0
+		? BigInt(
+				query.entities[0].attributes.find(
+					(attribute) => attribute.key === "EthDemo_blockNumber",
+				)?.value,
+			)
+		: 0n;
 }
 export async function getLatestBlockNumber(): Promise<bigint> {
 	return getLatestOrOldestBlockNumber(true);
@@ -161,12 +168,12 @@ export async function getBlock(blockNumber?: number): Promise<Entity | null> {
 			.limit(1)
 			.withPayload()
 			.where([
-				eq("project", "InfDemo"),
-				eq("InfDemo_dataType", "blockdata"),
-				eq("InfDemo_version", DATA_VERSION),
+				eq("project", "EthDemo"),
+				eq("EthDemo_dataType", "blockdata"),
+				eq("EthDemo_version", DATA_VERSION),
 			]);
 		if (blockNumber) {
-			query.where([eq("InfDemo_blockNumber", blockNumber.toString())]);
+			query.where([eq("EthDemo_blockNumber", blockNumber.toString())]);
 		}
 		const result = await query.fetch();
 		console.debug("result from query", result);
@@ -187,15 +194,15 @@ export async function getBlocksSinceTimestamp(
 	const query = await arkivPublicClient
 		.buildQuery()
 		.where([
-			eq("project", "InfDemo"),
-			gt("InfDemo_blockTimestamp", timestamp),
-			eq("InfDemo_dataType", "blockdata"),
-			eq("InfDemo_version", DATA_VERSION),
+			eq("project", "EthDemo"),
+			gt("EthDemo_blockTimestamp", timestamp),
+			eq("EthDemo_dataType", "blockdata"),
+			eq("EthDemo_version", DATA_VERSION),
 		])
 		.withPayload()
 		.limit(limit);
 	if (endTimestamp) {
-		query.where([lte("InfDemo_blockTimestamp", endTimestamp)]);
+		query.where([lte("EthDemo_blockTimestamp", endTimestamp)]);
 	}
 	const entities = [];
 	const result = await query.fetch();
@@ -223,22 +230,22 @@ export async function storeAggregatedData(
 		attributes: [
 			{
 				key: "project",
-				value: "InfDemo",
+				value: "EthDemo",
 			},
 			{
-				key: "InfDemo_dataType",
+				key: "EthDemo_dataType",
 				value: "stats",
 			},
 			{
-				key: "InfDemo_statsType",
+				key: "EthDemo_statsType",
 				value: aggType,
 			},
 			{
-				key: "InfDemo_statsTimestamp",
+				key: "EthDemo_statsTimestamp",
 				value: timestamp,
 			},
 			{
-				key: "InfDemo_version",
+				key: "EthDemo_version",
 				value: DATA_VERSION,
 			},
 		],
@@ -260,16 +267,16 @@ export async function getAggregatedDataSinceTimestamp({
 	const query = await arkivPublicClient
 		.buildQuery()
 		.where([
-			eq("project", "InfDemo"),
-			gt("InfDemo_statsTimestamp", timestamp),
-			eq("InfDemo_dataType", "stats"),
-			eq("InfDemo_statsType", aggType),
-			eq("InfDemo_version", DATA_VERSION),
+			eq("project", "EthDemo"),
+			gt("EthDemo_statsTimestamp", timestamp),
+			eq("EthDemo_dataType", "stats"),
+			eq("EthDemo_statsType", aggType),
+			eq("EthDemo_version", DATA_VERSION),
 		])
 		.withPayload();
 
 	if (endTimestamp) {
-		query.where([lte("InfDemo_statsTimestamp", endTimestamp)]);
+		query.where([lte("EthDemo_statsTimestamp", endTimestamp)]);
 	}
 
 	const result = await query.fetch();
