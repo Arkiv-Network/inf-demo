@@ -1,22 +1,22 @@
-import { defineConfig } from "vite";
+import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import tailwindcss from "@tailwindcss/vite";
+import { defineConfig } from "vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: "/inf-demo/showcase/",
-  plugins: [
-    react({
-      babel: {
-        plugins: [["babel-plugin-react-compiler"]],
-      },
-    }),
-    tailwindcss(),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+	base: process.env.VITE_BASE_PATH ?? "/inf-demo/showcase/",
+	plugins: [
+		react({
+			babel: {
+				plugins: [["babel-plugin-react-compiler"]],
+			},
+		}),
+		tailwindcss(),
+	],
+	resolve: {
+		alias: {
+			"@": path.resolve(__dirname, "./src"),
+		},
+	},
 });
