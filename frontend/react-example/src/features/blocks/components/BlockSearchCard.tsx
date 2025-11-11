@@ -40,7 +40,7 @@ const BlockNumberStringSchema = z.string().refine((val) => {
 
 export function BlockSearchCard({ className }: BlockSearchCardProps) {
   const [inputValue, setInputValue] = useState("");
-  const [searchNumber, setSearchNumber] = useState<string | null>("23746985");
+  const [searchNumber, setSearchNumber] = useState<string | null>("23775071");
   const [formError, setFormError] = useState<string | null>(null);
 
   const { data, isPending, isError, error } = useBlockDetails(searchNumber);
