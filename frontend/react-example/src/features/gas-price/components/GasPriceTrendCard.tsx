@@ -116,11 +116,11 @@ export function GasPriceTrendCard({ className }: GasPriceTrendCardProps) {
                 }
               />
               <YAxis
-                width={72}
+                width={100}
                 axisLine={false}
                 tickLine={false}
                 tickMargin={8}
-                tickFormatter={(value) => `${value.toFixed(0)} Gwei`}
+                tickFormatter={(value) => `${value.toFixed(2)} Gwei`}
               />
               <ChartTooltip
                 cursor={{ strokeDasharray: "4 4" }}
