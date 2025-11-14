@@ -216,8 +216,8 @@ export async function getGLMTransfersForBlockRange(
 	const logs = await ethClient.getLogs({
 		address: GLM_ADDRESS,
 		event: erc20Abi[0],
-		fromBlock: startBlock,
-		toBlock: endBlock,
+		fromBlock: startBlock <= endBlock ? startBlock : endBlock,
+		toBlock: startBlock <= endBlock ? endBlock : startBlock,
 	});
 
 	// Group by block number
