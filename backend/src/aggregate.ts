@@ -3,6 +3,8 @@ import {
 	getBlocksSinceTimestamp,
 	storeAggregatedData,
 } from "./arkiv";
+import { getGLMTransfersForBlockRange } from "./eth";
+import type { AggregatedDataSchema } from "./types";
 
 export async function aggregateDataLastHour(referenceTimestamp?: number) {
 	// get current timestamp in seconds
@@ -35,14 +37,20 @@ export async function aggregateDataLastHour(referenceTimestamp?: number) {
 		return {
 			totalTransactionCount: 0,
 			avgGasPrice: 0n,
-		};
+			totalGLMTransfersCount: 0,
+			totalGLMTransfersAmount: 0,
+		} as AggregatedDataSchema;
 	}
 
 	// aggregate the data
 	const aggregatedData = {
 		totalTransactionCount: 0,
 		avgGasPrice: 0n,
-	};
+		totalGLMTransfersCount: 0,
+		totalGLMTransfersAmount: 0,
+	} as AggregatedDataSchema;
+
+	// aggregate block data
 	for (const block of blocks) {
 		aggregatedData.totalTransactionCount += block.transactionCount;
 		aggregatedData.avgGasPrice += block.gasPrice;
@@ -51,6 +59,21 @@ export async function aggregateDataLastHour(referenceTimestamp?: number) {
 		aggregatedData.avgGasPrice > 0n
 			? aggregatedData.avgGasPrice / BigInt(blocks.length)
 			: 0n;
+
+	// aggregate GLM transfers
+	const glmTransfers = await getGLMTransfersForBlockRange(
+		blocks[blocks.length - 1].blockNumber,
+		blocks[0].blockNumber,
+	);
+
+	aggregatedData.totalGLMTransfersCount = glmTransfers.reduce(
+		(sum, transfer) => sum + transfer.transferCount,
+		0,
+	);
+	aggregatedData.totalGLMTransfersAmount = glmTransfers.reduce(
+		(sum, transfer) => sum + transfer.totalTransferredInGLM,
+		0,
+	);
 
 	await storeAggregatedData(aggregatedData, currentTimestamp, "hourly");
 
@@ -89,7 +112,9 @@ export async function aggregateDataLastDay(referenceTimestamp?: number) {
 	const dailyAggregatedData = {
 		totalTransactionCount: 0,
 		avgGasPrice: 0n,
-	};
+		totalGLMTransfersCount: 0,
+		totalGLMTransfersAmount: 0,
+	} as AggregatedDataSchema;
 
 	if (hourlyStats.length < 24) {
 		console.info(
@@ -100,6 +125,8 @@ export async function aggregateDataLastDay(referenceTimestamp?: number) {
 	for (const stat of hourlyStats) {
 		dailyAggregatedData.totalTransactionCount += stat.totalTransactionCount;
 		dailyAggregatedData.avgGasPrice += stat.avgGasPrice;
+		dailyAggregatedData.totalGLMTransfersCount += stat.totalGLMTransfersCount;
+		dailyAggregatedData.totalGLMTransfersAmount += stat.totalGLMTransfersAmount;
 	}
 	dailyAggregatedData.avgGasPrice =
 		dailyAggregatedData.avgGasPrice > 0n

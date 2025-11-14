@@ -52,7 +52,7 @@ app.get("/collectData", async (c) => {
 				console.info("Get parent block to store next", latestBlockOnEth.number);
 			}
 		}
-		await storeBlocks(blocksToStore, gasPrice);
+		await storeBlocks(blocksToStore);
 		console.info(
 			"Blocks stored successfully. Amount of blocks stored:",
 			blocksToStore.length,

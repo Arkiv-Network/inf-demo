@@ -9,17 +9,13 @@
  *   bun feedData.ts --stats        # generate stats for hours and days
  */
 
-import type { Block } from "viem";
 import { aggregateDataLastDay, aggregateDataLastHour } from "./src/aggregate";
 import {
 	getLatestBlockNumber,
 	getOldestBlockNumber,
 	storeBlocks,
 } from "./src/arkiv";
-import {
-	getBlock as getEthBlock,
-	getSuggestedGasPriceForBlock,
-} from "./src/eth";
+import { getBlock as getEthBlock } from "./src/eth";
 import type { BlockWithGasPrice } from "./src/types";
 
 console.debug = () => {};

@@ -1,6 +1,24 @@
-import { createPublicClient, formatGwei, type Hex, http } from "viem";
+import {
+	createPublicClient,
+	formatEther,
+	formatGwei,
+	formatUnits,
+	type Hex,
+	http,
+	parseAbi,
+	parseEther,
+	parseUnits,
+} from "viem";
 import { mainnet } from "viem/chains";
 import type { BlockWithGasPrice } from "./types";
+
+// GLM token contract address (Golem on Ethereum mainnet)
+const GLM_ADDRESS = "0x7DD9c5Cba05E151C895FDe1CF355C9A1D5DA6429";
+
+// Standard ERC20 Transfer event ABI
+const erc20Abi = parseAbi([
+	"event Transfer(address indexed from, address indexed to, uint256 value)",
+]);
 
 console.info("ETH_RPC_URL", process.env.ETH_RPC_URL);
 const ethClient = createPublicClient({
@@ -149,6 +167,84 @@ export async function getBulkGasPricesForBlocks(
 			blockNumber: blockNum,
 			suggestedGasPrice: suggestedPrice,
 			suggestedGasPriceGwei: formatGwei(suggestedPrice),
+		});
+	}
+
+	return results;
+}
+
+// Get GLM transfers for a specific block
+export async function getGLMTransfersForBlock(blockNumber: bigint) {
+	const logs = await ethClient.getLogs({
+		address: GLM_ADDRESS,
+		event: erc20Abi[0], // Transfer event
+		fromBlock: blockNumber,
+		toBlock: blockNumber,
+	});
+
+	let totalTransferred = 0n;
+	const transfers = [];
+
+	for (const log of logs) {
+		const { from, to, value } = log.args;
+
+		transfers.push({
+			from,
+			to,
+			value,
+			valueInGLM: formatUnits(value, 18), // GLM has 18 decimals
+			transactionHash: log.transactionHash,
+		});
+
+		totalTransferred += value;
+	}
+
+	return {
+		blockNumber,
+		transferCount: transfers.length,
+		totalTransferred,
+		totalTransferredInGLM: formatUnits(totalTransferred, 18),
+		transfers,
+	};
+}
+
+export async function getGLMTransfersForBlockRange(
+	startBlock: bigint,
+	endBlock: bigint,
+) {
+	// Query all transfers in the range at once (more efficient)
+	const logs = await ethClient.getLogs({
+		address: GLM_ADDRESS,
+		event: erc20Abi[0],
+		fromBlock: startBlock,
+		toBlock: endBlock,
+	});
+
+	// Group by block number
+	const transfersByBlock = new Map<bigint, typeof logs>();
+
+	for (const log of logs) {
+		const blockNum = log.blockNumber;
+		if (!transfersByBlock.has(blockNum)) {
+			transfersByBlock.set(blockNum, []);
+		}
+		transfersByBlock.get(blockNum)?.push(log);
+	}
+
+	// Calculate totals per block
+	const results = [];
+	for (let blockNum = startBlock; blockNum <= endBlock; blockNum++) {
+		const blockLogs = transfersByBlock.get(blockNum) || [];
+		const totalTransferred = blockLogs.reduce(
+			(sum, log) => sum + log.args.value,
+			0n,
+		);
+
+		results.push({
+			blockNumber: blockNum,
+			transferCount: blockLogs.length,
+			totalTransferred,
+			totalTransferredInGLM: Number(formatEther(totalTransferred)),
 		});
 	}
 

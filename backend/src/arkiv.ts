@@ -20,7 +20,7 @@ import {
 
 const MONTH_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const WEEK_IN_SECONDS = 60 * 60 * 24 * 7; // 7 days
-const DATA_VERSION = "0.8";
+const DATA_VERSION = "0.11";
 
 type AggregatedDataType = "hourly" | "daily";
 
@@ -227,6 +227,8 @@ export async function storeAggregatedData(
 		payload: jsonToPayload({
 			totalTransactionCount: aggregatedData.totalTransactionCount,
 			avgGasPrice: aggregatedData.avgGasPrice.toString(),
+			totalGLMTransfersCount: aggregatedData.totalGLMTransfersCount,
+			totalGLMTransfersAmount: aggregatedData.totalGLMTransfersAmount,
 		}),
 		attributes: [
 			{
