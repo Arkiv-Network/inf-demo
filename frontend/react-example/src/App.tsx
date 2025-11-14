@@ -4,6 +4,7 @@ import { GasPriceHeatmapCard } from "@/features/gas-price/components/GasPriceHea
 import { GasPriceTrendCard } from "@/features/gas-price/components/GasPriceTrendCard";
 import { TransactionHeatmapCard } from "@/features/transactions/components/TransactionHeatmapCard";
 import { TransactionHistoryCard } from "@/features/transactions/components/TransactionHistoryCard";
+import { GlmTransferCard } from "@/features/glm-transfers/components/GlmTransferCard";
 import { LatestBlockHighlight } from "./features/blocks/components/LatestBlockHighlight";
 import CurrentGasPriceHighlight from "./features/gas-price/components/CurrentGasPriceHighlight";
 import AverageGasPriceHighlight from "./features/gas-price/components/AverageGasPriceHighlight";
@@ -28,7 +29,7 @@ function App() {
                     className="-m-4 p-4 z-1 relative inline-block"
                   >
                     <img
-                      src={import.meta.env.BASE_URL + "arkiv-logo.svg"}
+                      src={`${import.meta.env.BASE_URL}arkiv-logo.svg`}
                       alt="Arkiv Logo"
                       className="w-14"
                     />
@@ -64,6 +65,10 @@ function App() {
             <section className="grid gap-6 xl:grid-cols-12" id="blocks">
               <LatestBlocksCard className="xl:col-span-8" />
               <BlockSearchCard className="xl:col-span-4" />
+            </section>
+
+            <section className="grid gap-6 xl:grid-cols-12" id="glm-transfers">
+              <GlmTransferCard className="xl:col-span-12" />
             </section>
 
             <section className="grid gap-6 xl:grid-cols-12" id="transactions">
