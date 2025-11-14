@@ -1,4 +1,4 @@
-import { eq } from "@arkiv-network/sdk/query";
+import { desc, eq } from "@arkiv-network/sdk/query";
 import { useQuery } from "@tanstack/react-query";
 import { useArkivClient } from "@/features/arkiv-client/hooks/useArkivClient";
 import { type BlockDetail, BlockDetailSchema } from "../types";
@@ -17,7 +17,7 @@ export function useLatestBlocks() {
 					eq("EthDemo_version", protocolVersion),
 					eq("EthDemo_dataType", "blockdata"),
 				])
-				.orderBy("EthDemo_blockTimestamp", "number", true)
+				.orderBy(desc("EthDemo_blockTimestamp", "number"))
 				.limit(10)
 				.ownedBy(entityOwner)
 				.withPayload()

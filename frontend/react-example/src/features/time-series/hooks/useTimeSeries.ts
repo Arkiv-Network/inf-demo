@@ -1,4 +1,4 @@
-import { eq, gte } from "@arkiv-network/sdk/query";
+import { asc, eq, gte } from "@arkiv-network/sdk/query";
 import { useQuery } from "@tanstack/react-query";
 import { useArkivClient } from "@/features/arkiv-client/hooks/useArkivClient";
 import { type HourlyStats, TimeSeriesStatsSchema } from "../types";
@@ -23,6 +23,7 @@ export function useTimeSeries(timeframe: "daily" | "hourly") {
 					gte("EthDemo_statsTimestamp", timestampWeekAgo),
 				])
 				.limit(timeframe === "daily" ? 30 : 7 * 24)
+				.orderBy(asc("EthDemo_statsTimestamp", "number"))
 				.ownedBy(entityOwner)
 				.withPayload()
 				.withAttributes()

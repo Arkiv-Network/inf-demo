@@ -4,7 +4,7 @@
     "": {
       "name": "react-example",
       "dependencies": {
-        "@arkiv-network/sdk": "0.3.2-dev.1",
+        "@arkiv-network/sdk": "^0.4.4",
         "@radix-ui/react-slot": "^1.2.3",
         "@tailwindcss/vite": "^4.1.16",
         "@tanstack/react-query": "^5.90.5",
@@ -40,7 +40,7 @@
   "packages": {
     "@adraffy/ens-normalize": ["@adraffy/ens-normalize@1.11.1", "", {}, "sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ=="],
 
-    "@arkiv-network/sdk": ["@arkiv-network/sdk@0.3.2-dev.1", "", { "dependencies": { "brotli-wasm": "^3.0.1", "viem": "^2.38.2" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-QBERIvyQ9UVPY/sASaqskosl4spVL4mhcmfn3W/eL053PF3kRN0L2dTz0EPOaB/Vedqi2W4QisAoiXocxl0J5A=="],
+    "@arkiv-network/sdk": ["@arkiv-network/sdk@0.4.4", "", { "dependencies": { "brotli-wasm": "^3.0.1", "debug": "^4.3.7", "viem": "^2.38.2" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-svM5UbMt4IiZCcOLgobe5OUm1aVoHjiFOO3AElJMBDPF2DPq7RyIMpC2MQjrW6SryU3UrQXC4UAbeFpkgT+8fw=="],
 
     "@babel/code-frame": ["@babel/code-frame@7.27.1", "", { "dependencies": { "@babel/helper-validator-identifier": "^7.27.1", "js-tokens": "^4.0.0", "picocolors": "^1.1.1" } }, "sha512-cjQ7ZlQ0Mv3b47hABuTevyTuYN4i+loJKGeV9flcCgIK37cCXRh+L1bd3iBHlynerhQ7BhCkn2BPbQUL+rGqFg=="],
 
