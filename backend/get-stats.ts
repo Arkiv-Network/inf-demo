@@ -11,12 +11,27 @@ import { getGLMTransfersForBlockRange } from "./src/eth";
 console.debug = () => {};
 
 async function getStats() {
-	const stats = await getAggregatedDataSinceTimestamp({
+	console.log("Getting hourly stats...");
+	const hourlyStats = await getAggregatedDataSinceTimestamp({
 		timestamp: 0,
 		endTimestamp: Math.floor(Date.now() / 1000),
 		aggType: "hourly",
 	});
-	console.log(stats);
+	console.log("Hourly stats found:", hourlyStats.length);
+	hourlyStats.forEach((stat) => {
+		console.log(stat);
+	});
+
+	console.log("Getting daily stats...");
+	const dailyStats = await getAggregatedDataSinceTimestamp({
+		timestamp: 0,
+		endTimestamp: Math.floor(Date.now() / 1000),
+		aggType: "daily",
+	});
+	console.log("Daily stats found:", dailyStats.length);
+	dailyStats.forEach((stat) => {
+		console.log(stat);
+	});
 }
 
 async function getBlocks() {
