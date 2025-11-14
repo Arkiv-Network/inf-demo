@@ -104,6 +104,7 @@ export function GasPriceTrendCard({ className }: GasPriceTrendCardProps) {
               style={{
                 cursor: "pointer",
               }}
+              margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="4 4" vertical={false} />
               <XAxis
@@ -116,10 +117,10 @@ export function GasPriceTrendCard({ className }: GasPriceTrendCardProps) {
                 }
               />
               <YAxis
-                width={100}
+                width={70}
                 axisLine={false}
                 tickLine={false}
-                tickMargin={8}
+                tickMargin={4}
                 tickFormatter={(value) => `${value.toFixed(2)} Gwei`}
               />
               <ChartTooltip

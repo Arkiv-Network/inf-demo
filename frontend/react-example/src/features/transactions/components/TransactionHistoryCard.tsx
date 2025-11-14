@@ -111,6 +111,7 @@ export function TransactionHistoryCard({
               style={{
                 cursor: "pointer",
               }}
+              margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
             >
               <CartesianGrid strokeDasharray="4 4" vertical={false} />
               <XAxis
@@ -123,9 +124,10 @@ export function TransactionHistoryCard({
                 }
               />
               <YAxis
-                width={72}
+                width={50}
                 axisLine={false}
                 tickLine={false}
+                tickMargin={4}
                 tickFormatter={(value) => compactNumberFormatter.format(value)}
               />
               <ChartTooltip
