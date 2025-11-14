@@ -16,7 +16,11 @@ import {
 	getOldestBlockNumber,
 	storeBlocks,
 } from "./src/arkiv";
-import { getBlock as getEthBlock, getGasPrice } from "./src/eth";
+import {
+	getBlock as getEthBlock,
+	getSuggestedGasPriceForBlock,
+} from "./src/eth";
+import type { BlockWithGasPrice } from "./src/types";
 
 console.debug = () => {};
 
@@ -28,7 +32,7 @@ async function feedHistory(numBlocks: number) {
 	let oldestBlockNumber = await getOldestBlockNumber();
 	if (oldestBlockNumber === 0n) {
 		console.log("No blocks found; getting latest block");
-		const latestBlock = await getEthBlock();
+		const latestBlock = await getEthBlock(undefined, undefined, true);
 		if (!latestBlock) {
 			console.error("Failed to fetch latest block");
 			return;
@@ -40,16 +44,15 @@ async function feedHistory(numBlocks: number) {
 	);
 
 	try {
-		const blocksToStore: Block[] = [];
-		const storedBlocks: Block[] = [];
+		const blocksToStore: BlockWithGasPrice[] = [];
+		const storedBlocks: BlockWithGasPrice[] = [];
 		const batchSize = 100;
 		let currentBlockNumber = oldestBlockNumber ? oldestBlockNumber - 1n : 0n;
 
-		const gasPrice = await getGasPrice();
 		console.log(`\n📥 Fetching ${numBlocks} blocks...`);
 		for (let i = 0; i < numBlocks; i++) {
 			try {
-				const block = await getEthBlock(undefined, currentBlockNumber);
+				const block = await getEthBlock(undefined, currentBlockNumber, true);
 				if (!block) throw new Error("Failed to fetch block");
 				blocksToStore.push(block);
 				console.log(
@@ -57,7 +60,7 @@ async function feedHistory(numBlocks: number) {
 				);
 				currentBlockNumber = currentBlockNumber - 1n;
 				if (blocksToStore.length === batchSize) {
-					await storeBlocks(blocksToStore, gasPrice);
+					await storeBlocks(blocksToStore);
 					storedBlocks.push(...blocksToStore);
 					blocksToStore.length = 0;
 				}
@@ -72,7 +75,7 @@ async function feedHistory(numBlocks: number) {
 
 		console.log("\n💾 Storing blocks in Arkiv...");
 		if (blocksToStore.length > 0) {
-			await storeBlocks(blocksToStore, gasPrice);
+			await storeBlocks(blocksToStore);
 			storedBlocks.push(...blocksToStore);
 			blocksToStore.length = 0;
 		}
@@ -167,24 +170,21 @@ async function feedStats(startTimestamp: number, endTimestamp: number) {
 // Real-time feed (like the /collectData endpoint), with polling
 //
 async function collectLatestOnce() {
-	let latestBlockOnEth = await getEthBlock();
+	let latestBlockOnEth = await getEthBlock(undefined, undefined, true);
 	if (!latestBlockOnEth) {
 		console.error("❌ Unable to fetch latest Ethereum block");
 		return { stored: 0 };
 	}
 	const latestBlockNumberOnArkiv = await getLatestBlockNumber();
-	const gasPrice = await getGasPrice();
 	console.info(
 		"latestBlockOnEth",
 		latestBlockOnEth?.number,
 		"latestBlockOnArkiv",
 		latestBlockNumberOnArkiv,
-		"gasPrice",
-		gasPrice,
 	);
 
 	let done = latestBlockOnEth.number === latestBlockNumberOnArkiv;
-	const blocksToStore: Block[] = [];
+	const blocksToStore: BlockWithGasPrice[] = [];
 	while (!done) {
 		blocksToStore.push(latestBlockOnEth);
 		console.info("Block to store added:", latestBlockOnEth.number);
@@ -194,7 +194,11 @@ async function collectLatestOnce() {
 		) {
 			done = true;
 		} else {
-			const parent = await getEthBlock(latestBlockOnEth.parentHash);
+			const parent = await getEthBlock(
+				latestBlockOnEth.parentHash,
+				undefined,
+				true,
+			);
 			if (!parent) {
 				console.error("Failed to fetch parent block; stopping this cycle");
 				break;
@@ -213,7 +217,7 @@ async function collectLatestOnce() {
 	console.log("\n💾 Storing new blocks in Arkiv...");
 	for (let i = 0; i < blocksToStore.length; i += 100) {
 		const batch = blocksToStore.slice(i, i + 100);
-		await storeBlocks(batch, gasPrice);
+		await storeBlocks(batch);
 	}
 	console.info(
 		"Blocks stored successfully. Amount of blocks stored:",

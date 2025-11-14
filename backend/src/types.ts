@@ -1,3 +1,4 @@
+import type { Block as ViemBlock } from "viem";
 import * as z from "zod";
 
 export const blockSchema = z.object({
@@ -24,3 +25,7 @@ export const aggregatedDataSchema = z.object({
 export type AggregatedDataSchema = z.infer<typeof aggregatedDataSchema>;
 
 export type DataType = "stats" | "blockdata" | "blocknumber";
+
+export type BlockWithGasPrice = ViemBlock & {
+	gasPrice: bigint;
+};

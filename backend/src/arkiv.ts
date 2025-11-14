@@ -8,8 +8,9 @@ import { privateKeyToAccount } from "@arkiv-network/sdk/accounts";
 import { kaolin, localhost } from "@arkiv-network/sdk/chains";
 import { eq, gt, lte } from "@arkiv-network/sdk/query";
 import { jsonToPayload } from "@arkiv-network/sdk/utils";
-import type { Block, Chain } from "viem";
+import type { Chain } from "viem";
 import { defineChain } from "viem";
+import type { BlockWithGasPrice } from "./types";
 import {
 	type AggregatedDataSchema,
 	aggregatedDataSchema,
@@ -54,7 +55,7 @@ const arkivPublicClient = createPublicClient({
 	transport: http(),
 });
 
-export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
+export async function storeBlocks(blocks: BlockWithGasPrice[]) {
 	let latestEthBlockNumber = 0n;
 	const batchSize = 100;
 	// store blocks in batches of 100
@@ -80,14 +81,14 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 						parentHash: block.parentHash,
 						timestamp: Number(block.timestamp),
 						transactionCount: block.transactions.length,
-						gasPrice: gasPrice.toString(),
+						gasPrice: block.gasPrice.toString(),
 						gasUsed: block.gasUsed.toString(),
 						gasLimit: block.gasLimit.toString(),
 						baseFeePerGas: block.baseFeePerGas?.toString(),
 						miner: block.miner,
 						size: block.size.toString(),
 					}),
-					contentType: "application/json",
+					contentType: "application/json" as const,
 					attributes: [
 						{
 							key: "project",
@@ -103,7 +104,7 @@ export async function storeBlocks(blocks: Block[], gasPrice: bigint) {
 						},
 						{
 							key: "EthDemo_blockGasPrice",
-							value: Number(gasPrice),
+							value: Number(block.gasPrice),
 						},
 						{
 							key: "EthDemo_blockTimestamp",
