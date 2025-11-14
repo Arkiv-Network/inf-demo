@@ -123,12 +123,103 @@ Open the served URL (for example, `http://localhost:8080`) and navigate between 
 
 ---
 
-## Next Steps
+## Code Description Related to Arkiv
 
-- Backfill historical data with `bun feedData.ts --history …` before launching the dashboards.
-- Schedule regular calls to `collectData` and `aggregateData` to keep Arkiv up to date.
-- Deploy the frontend(s) to any static hosting provider once the backend endpoints are reachable.
+### Backend
 
-Happy building!
+The backend consists of the main ingestion script `feedData.ts` (located in the root `backend/` directory, described above) and several logic modules in the `src/` directory:
+
+- **`aggregate.ts`** — Data aggregation logic for summing and averaging data per hour and day
+- **`eth.ts`** — Logic for gathering data from Ethereum RPC nodes about Ethereum blocks
+- **`types.ts`** — TypeScript types used throughout the project
+- **`arkiv.ts`** — Main Arkiv integration logic for storing and retrieving data from Arkiv (described in detail below)
+
+#### Arkiv SDK Usage
+
+This project uses the [Arkiv SDK](https://www.npmjs.com/package/@arkiv-network/sdk) to interact with the Arkiv network.
+
+##### Client Setup
+
+At the beginning of `arkiv.ts`, two Arkiv clients are defined:
+
+- **Wallet client** — For write operations (requires a private key)
+- **Public client** — For read-only operations
+
+```typescript
+const arkivWalletClient = createWalletClient({
+	chain: chains[process.env.ARKIV_CHAIN as keyof typeof chains],
+	transport: http(),
+	account: privateKeyToAccount(process.env.ARKIV_PRIVATE_KEY as `0x${string}`),
+});
+
+const arkivPublicClient = createPublicClient({
+	chain: chains[process.env.ARKIV_CHAIN as keyof typeof chains],
+	transport: http(),
+});
+```
+
+##### Chain Configuration
+
+The SDK provides predefined testnet chains in the `@arkiv-network/sdk/chains` module. You can also define custom chains:
+
+```typescript
+defineChain({
+    id: 60138453045,
+    name: "InfuraDemo",
+    network: "infurademo",
+    nativeCurrency: {
+        name: "Ethereum",
+        symbol: "ETH",
+        decimals: 18,
+    },
+    rpcUrls: {
+        default: {
+            http: ["https://infurademo.hoodi.arkiv.network/rpc"],
+        },
+    },
+})
+```
+
+##### Storing Data
+
+The `storeBlocks` function stores data in batches (up to 100 blocks) using the `mutateEntities` function from the wallet client. This function allows you to perform multiple operations (creates, updates, deletions, etc.) in a single chain transaction.
+
+For single operations (creating one entity, deleting one entity, etc.), the SDK provides helper methods like `createEntity`, `updateEntity`, `deleteEntity`, etc. The `storeAggregatedData` function demonstrates creating a single entity using the `createEntity` function.
+
+##### Querying Data
+
+The codebase includes several getter functions that demonstrate querying using the QueryBuilder. For example, `getBlocksSinceTimestamp` shows how to build and execute queries:
+
+```typescript
+const query = await arkivPublicClient
+	.buildQuery()
+	.where([
+		eq("project", "EthDemo"),
+		gt("EthDemo_blockTimestamp", timestamp),
+		eq("EthDemo_dataType", "blockdata"),
+		eq("EthDemo_version", DATA_VERSION),
+	])
+	.withPayload()
+	.limit(limit);
+if (endTimestamp) {
+	query.where([lte("EthDemo_blockTimestamp", endTimestamp)]);
+}
+```
+
+The QueryBuilder's `fetch` method returns a `QueryResult` object that contains the found entities and supports pagination when a result limit is used:
+
+```typescript
+const result = await query.fetch();
+entities.push(...result.entities);
+while (result.hasNextPage()) {
+	await result.next();
+	entities.push(...result.entities);
+}
+```
+
+##### Query Filtering
+
+**Important:** Query filters are based on **attributes**, not payload. The payload is treated as unstructured data. Any fields you need for query filtering must be stored as attributes. Currently, the Arkiv chain supports two types of attributes: string and numeric.
+
 
 
