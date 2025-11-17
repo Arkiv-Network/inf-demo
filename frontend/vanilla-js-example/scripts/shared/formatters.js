@@ -23,6 +23,11 @@ const decimalFormatter = new Intl.NumberFormat(undefined, {
   maximumFractionDigits: 2,
 });
 
+const compactNumberFormatter = new Intl.NumberFormat(undefined, {
+  notation: "compact",
+  maximumFractionDigits: 1,
+});
+
 function formatDateTime(seconds) {
   if (!Number.isFinite(seconds)) {
     return "Unknown";
@@ -59,6 +64,20 @@ function formatGwei(value) {
   return decimalFormatter.format(inGwei);
 }
 
+function formatTokenAmount(value) {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+  return decimalFormatter.format(value);
+}
+
+function formatCompactNumber(value) {
+  if (!Number.isFinite(value)) {
+    return "0";
+  }
+  return compactNumberFormatter.format(value);
+}
+
 function formatAddress(value) {
   if (!value) {
     return "Unknown";
@@ -75,5 +94,7 @@ export {
   formatDateTime,
   formatGwei,
   formatHourUTC,
+  formatTokenAmount,
+  formatCompactNumber,
   formatNumber,
 };

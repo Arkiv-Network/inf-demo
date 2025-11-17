@@ -165,6 +165,11 @@ async function fetchStats(timeframe) {
 
 	const points = [];
 
+	const toNumber = (value, fallback = 0) => {
+		const parsed = Number(value);
+		return Number.isFinite(parsed) ? parsed : fallback;
+	};
+
 	for (const entity of response.entities) {
 		try {
 			const attributes = Array.isArray(entity.attributes)
@@ -181,6 +186,10 @@ async function fetchStats(timeframe) {
 			const avgGasPriceRaw = payload.avgGasPrice ?? payload.averageGasPrice;
 			const totalTxRaw =
 				payload.totalTransactionCount ?? payload.transactionCount ?? 0;
+			const glmCountRaw =
+				payload.totalGLMTransfersCount ?? payload.glmTransferCount ?? 0;
+			const glmAmountRaw =
+				payload.totalGLMTransfersAmount ?? payload.glmTransferVolume ?? 0;
 
 			const avgGasPrice = Number(avgGasPriceRaw);
 			const totalTransactionCount = Number(totalTxRaw);
@@ -192,11 +201,16 @@ async function fetchStats(timeframe) {
 				continue;
 			}
 
+			const totalGLMTransfersCount = toNumber(glmCountRaw);
+			const totalGLMTransfersAmount = toNumber(glmAmountRaw);
+
 			points.push({
 				arkivEntityKey: entity.key,
 				timestamp,
 				avgGasPrice,
 				totalTransactionCount,
+				totalGLMTransfersCount,
+				totalGLMTransfersAmount,
 			});
 		} catch (error) {
 			console.error("Failed to parse stats entity", error);

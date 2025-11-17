@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Weekly Stats – Arkiv Insights</title>
+    <title>GLM Transfers – Arkiv Insights</title>
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
     <meta
       name="description"
-      content="Monitor Ethereum network activity and gas prices using Arkiv - a universal, cost efficient data layer where you control your data on Ethereum."
+      content="Explore GLM transfer volume and activity using Arkiv's time-series data."
     />
     <link rel="stylesheet" href="../styles/main.css" />
   </head>
@@ -27,16 +27,14 @@
                 <a class="nav__link" href="./blocks.html">Ethereum Blocks</a>
               </li>
               <li>
-                <a
-                  class="nav__link"
-                  href="./weekly-stats.html"
-                  aria-current="page"
-                >
-                  Weekly Stats
-                </a>
+                <a class="nav__link" href="./weekly-stats.html">Weekly Stats</a>
               </li>
               <li>
-                <a class="nav__link" href="./glm-transfers.html">
+                <a
+                  class="nav__link"
+                  href="./glm-transfers.html"
+                  aria-current="page"
+                >
                   GLM Transfers
                 </a>
               </li>
@@ -68,68 +66,64 @@
           <section class="card card--summary">
             <header class="card-header">
               <div>
-                <h1>Weekly gas &amp; transaction trends</h1>
+                <h1>GLM transfer activity</h1>
                 <p>
-                  Aggregated daily statistics from Arkiv highlight how fees and
-                  throughput evolve over the last seven days.
+                  Track daily and hourly GLM token movements across Arkiv's
+                  Ethereum demo data.
                 </p>
               </div>
-              <span class="badge badge--accent" data-summary-status
-                >Loading…</span
-              >
+              <span class="badge badge--accent" data-glm-status>Loading…</span>
             </header>
             <div class="card__body summary-grid">
               <article class="summary-card">
-                <span class="summary-label">Latest gas average</span>
-                <span class="summary-value" data-summary-gas-latest>--</span>
-                <span
-                  class="summary-caption"
-                  data-summary-gas-latest-date
-                ></span>
+                <span class="summary-label">Latest daily transfers</span>
+                <span class="summary-value" data-glm-daily-count>--</span>
+                <span class="summary-caption" data-glm-daily-date></span>
               </article>
               <article class="summary-card">
-                <span class="summary-label">7 day gas mean</span>
-                <span class="summary-value" data-summary-gas-mean>--</span>
-                <span class="summary-caption">Derived from daily averages</span>
+                <span class="summary-label">Latest daily volume</span>
+                <span class="summary-value" data-glm-daily-volume>--</span>
+                <span class="summary-caption"
+                  >Total GLM moved over the last full day</span
+                >
               </article>
               <article class="summary-card">
-                <span class="summary-label">Peak transactions</span>
-                <span class="summary-value" data-summary-tx-peak>--</span>
-                <span class="summary-caption" data-summary-tx-peak-date></span>
+                <span class="summary-label">7 day avg transfers</span>
+                <span class="summary-value" data-glm-avg-count>--</span>
+                <span class="summary-caption"
+                  >Average GLM transfers per day</span
+                >
               </article>
               <article class="summary-card">
-                <span class="summary-label">Tx 7 day mean</span>
-                <span class="summary-value" data-summary-tx-mean>--</span>
-                <span class="summary-caption">Total transactions per day</span>
+                <span class="summary-label">7 day avg volume</span>
+                <span class="summary-value" data-glm-avg-volume>--</span>
+                <span class="summary-caption">Average GLM moved per day</span>
               </article>
             </div>
           </section>
 
-          <section class="content-grid weekly-charts">
+          <section class="content-grid glm-charts">
             <div class="card chart-card">
               <header class="card-header">
                 <div>
-                  <h2>Average gas price (daily)</h2>
-                  <p>Seven-day view of the mean gas price expressed in gwei.</p>
+                  <h2>Daily GLM trends (30 days)</h2>
+                  <p>Transfer volume and count aggregated per day.</p>
                 </div>
               </header>
               <div class="card__body chart-container">
-                <canvas id="gas-weekly-chart" height="320"></canvas>
+                <canvas id="glm-daily-chart" height="320"></canvas>
               </div>
             </div>
 
             <div class="card chart-card">
               <header class="card-header">
                 <div>
-                  <h2>Transaction throughput (daily)</h2>
-                  <p>
-                    Total transaction count captured per day across the last
-                    week.
-                  </p>
+                  <h2>Hourly GLM trends (24 hours)</h2>
+                  <p>Recent token movement at an hourly resolution.</p>
                 </div>
               </header>
               <div class="card__body chart-container">
-                <canvas id="tx-weekly-chart" height="320"></canvas>
+                <canvas id="glm-hourly-chart" height="320"></canvas>
               </div>
             </div>
           </section>
@@ -137,7 +131,7 @@
       </div>
     </div>
 
-    <script type="module" src="../scripts/weekly-stats.js"></script>
-    <noscript>Enable JavaScript to view the weekly charts.</noscript>
+    <script type="module" src="../scripts/glm-transfers.js"></script>
+    <noscript>Enable JavaScript to chart GLM transfer activity.</noscript>
   </body>
 </html>
