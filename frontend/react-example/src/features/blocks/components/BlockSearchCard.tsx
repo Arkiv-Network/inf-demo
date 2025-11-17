@@ -109,7 +109,7 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
     const trimmed = inputValue.trim();
     if (!trimmed) {
       setFormError("Please enter a block number");
-      setSearchNumber(null);
+      setSearchNumber("");
       return;
     }
 
@@ -118,7 +118,7 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
       setFormError(
         parseResult.error.issues[0]?.message || "Invalid block number"
       );
-      setSearchNumber(null);
+      setSearchNumber("");
       return;
     }
 
@@ -132,7 +132,7 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
         setFormError(
           `Block must be indexed on Arkiv (between ${blockRange.minBlockNumber} and ${blockRange.maxBlockNumber})`
         );
-        setSearchNumber(null);
+        setSearchNumber("");
         return;
       }
     }
