@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, ChevronRight, ExternalLink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 import { useBlockDetails } from "../hooks/useBlockDetails";
+import { useBlockRange } from "../hooks/useBlockRange";
 
 import type { FormEvent } from "react";
 import * as z from "zod/v4";
@@ -40,10 +42,22 @@ const BlockNumberStringSchema = z.string().refine((val) => {
 
 export function BlockSearchCard({ className }: BlockSearchCardProps) {
   const [inputValue, setInputValue] = useState("");
-  const [searchNumber, setSearchNumber] = useState<string | null>("23775071");
+  const [searchNumber, setSearchNumber] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const { data: blockRange, isPending: isLoadingRange } = useBlockRange();
   const { data, isPending, isError, error } = useBlockDetails(searchNumber);
+
+  // Only show loading state on initial load, not on refetches
+  const showLoadingState = isLoadingRange && !blockRange;
+
+  // Set default search number to the max indexed block when range is available
+  useEffect(() => {
+    if (blockRange && searchNumber === null) {
+      setSearchNumber(String(blockRange.maxBlockNumber));
+      setInputValue(String(blockRange.maxBlockNumber));
+    }
+  }, [blockRange, searchNumber]);
 
   const details = useMemo(() => {
     if (!data) {
@@ -100,14 +114,36 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
     }
 
     const parseResult = BlockNumberStringSchema.safeParse(trimmed);
-    if (parseResult.success) {
-      setSearchNumber(parseResult.data);
-    } else {
+    if (!parseResult.success) {
       setFormError(
         parseResult.error.issues[0]?.message || "Invalid block number"
       );
       setSearchNumber(null);
+      return;
     }
+
+    // Validate against block range if available
+    if (blockRange) {
+      const blockNum = Number(parseResult.data);
+      if (
+        blockNum < blockRange.minBlockNumber ||
+        blockNum > blockRange.maxBlockNumber
+      ) {
+        setFormError(
+          `Block must be indexed on Arkiv (between ${blockRange.minBlockNumber} and ${blockRange.maxBlockNumber})`
+        );
+        setSearchNumber(null);
+        return;
+      }
+    }
+
+    setSearchNumber(parseResult.data);
+  }
+
+  function handleRangeClick(blockNumber: number) {
+    setSearchNumber(String(blockNumber));
+    setInputValue(String(blockNumber));
+    setFormError(null);
   }
 
   return (
@@ -142,8 +178,13 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
                 placeholder="Enter block number"
                 value={inputValue}
                 onChange={(event) => setInputValue(event.target.value)}
+                disabled={showLoadingState}
               />
-              <Button type="submit" className="shrink-0">
+              <Button
+                type="submit"
+                className="shrink-0"
+                disabled={showLoadingState}
+              >
                 Search
                 <ChevronRight className="size-4" />
               </Button>
@@ -154,7 +195,11 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
           </div>
         </form>
         <div className="mt-6 space-y-4">
-          {!searchNumber ? null : isPending ? (
+          {showLoadingState ? (
+            <div className="flex min-h-36 items-center justify-center text-sm text-muted-foreground">
+              Loading block explorer...
+            </div>
+          ) : !searchNumber ? null : isPending ? (
             <div className="flex min-h-36 items-center justify-center text-sm text-muted-foreground">
               Looking up block details...
             </div>
@@ -172,7 +217,7 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
               <div className="flex items-baseline justify-between gap-2">
                 <span className="text-muted-foreground">Block Number</span>
                 <span className="font-mono text-lg font-semibold">
-                  #{data.blockNumber.toLocaleString()}
+                  #{data.blockNumber}
                 </span>
               </div>
               <dl className="grid grid-cols-1 gap-3 text-xs sm:grid-cols-2">
@@ -210,6 +255,35 @@ export function BlockSearchCard({ className }: BlockSearchCardProps) {
           )}
         </div>
       </CardContent>
+      <CardFooter className="mt-auto">
+        {showLoadingState ? (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="h-4 w-32 animate-pulse rounded bg-slate-200" />
+            <div className="h-4 w-16 animate-pulse rounded bg-slate-200" />
+            <div className="h-4 w-4 animate-pulse rounded bg-slate-200" />
+            <div className="h-4 w-16 animate-pulse rounded bg-slate-200" />
+          </div>
+        ) : blockRange ? (
+          <div className="text-muted-foreground inline-flex items-center gap-1 text-sm">
+            Blocks indexed on Arkiv:{" "}
+            <button
+              type="button"
+              onClick={() => handleRangeClick(blockRange.minBlockNumber)}
+              className="font-mono text-sky-700 hover:text-sky-900 hover:underline focus:underline focus:outline-none cursor-pointer"
+            >
+              {blockRange.minBlockNumber}
+            </button>{" "}
+            to{" "}
+            <button
+              type="button"
+              onClick={() => handleRangeClick(blockRange.maxBlockNumber)}
+              className="font-mono text-sky-700 hover:text-sky-900 hover:underline focus:underline focus:outline-none cursor-pointer"
+            >
+              {blockRange.maxBlockNumber}
+            </button>
+          </div>
+        ) : null}
+      </CardFooter>
     </Card>
   );
 }

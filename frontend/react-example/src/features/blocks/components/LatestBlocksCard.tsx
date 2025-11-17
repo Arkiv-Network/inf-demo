@@ -210,7 +210,7 @@ export function LatestBlocksCard({ className }: LatestBlocksCardProps) {
             <div className="space-y-3">
               {data.map((block) => (
                 <article
-                  key={block.blockHash}
+                  key={block.arkivEntityKey}
                   className="rounded-xl border border-sky-100 bg-white/80 p-4 shadow-sm shadow-sky-100/70"
                 >
                   <div className="flex flex-col gap-3 text-sm">
