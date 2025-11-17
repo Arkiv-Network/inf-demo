@@ -1,9 +1,11 @@
 import { formatGwei } from "viem";
+import { aggregateDataLastHour } from "./src/aggregate";
 import {
 	getAggregatedDataSinceTimestamp,
 	getBlocksSinceTimestamp,
 	getLatestBlockNumber,
 	getOldestBlockNumber,
+	removeEntityByKey,
 } from "./src/arkiv";
 import { getGLMTransfersForBlockRange } from "./src/eth";
 
@@ -54,12 +56,12 @@ async function getBlocks() {
 	console.log(`Total blocks: ${blocks.length}`);
 }
 
-async function getGLMTransfers() {
+async function getGLMTransfers(fromBlock?: bigint, toBlock?: bigint) {
 	// Last stored block number
-	const lastStoredBlockNumber = await getLatestBlockNumber();
+	const lastStoredBlockNumber = toBlock ?? (await getLatestBlockNumber());
 	console.log("Last stored block number:", lastStoredBlockNumber);
 
-	const oldestBlockNumber = await getOldestBlockNumber();
+	const oldestBlockNumber = fromBlock ?? (await getOldestBlockNumber());
 	console.log("Oldest block number:", oldestBlockNumber);
 
 	if (lastStoredBlockNumber === 0n) {
@@ -68,8 +70,8 @@ async function getGLMTransfers() {
 	}
 
 	const transfers = await getGLMTransfersForBlockRange(
-		lastStoredBlockNumber - 1000n,
-		lastStoredBlockNumber,
+		fromBlock ?? lastStoredBlockNumber - 1000n,
+		toBlock ?? lastStoredBlockNumber,
 	);
 
 	// Print summary
@@ -83,6 +85,6 @@ async function getGLMTransfers() {
 	});
 }
 
-getStats();
-getBlocks();
-getGLMTransfers();
+//getStats();
+//getBlocks();
+getGLMTransfers(23818754n, 23819050n);

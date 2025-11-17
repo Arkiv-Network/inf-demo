@@ -212,12 +212,15 @@ export async function getGLMTransfersForBlockRange(
 	startBlock: bigint,
 	endBlock: bigint,
 ) {
+	const fromBlock = startBlock <= endBlock ? startBlock : endBlock;
+	const toBlock = startBlock <= endBlock ? endBlock : startBlock;
+	console.debug("Getting GLM transfers for block range:", fromBlock, toBlock);
 	// Query all transfers in the range at once (more efficient)
 	const logs = await ethClient.getLogs({
 		address: GLM_ADDRESS,
 		event: erc20Abi[0],
-		fromBlock: startBlock <= endBlock ? startBlock : endBlock,
-		toBlock: startBlock <= endBlock ? endBlock : startBlock,
+		fromBlock: fromBlock,
+		toBlock: toBlock,
 	});
 
 	// Group by block number
@@ -233,7 +236,7 @@ export async function getGLMTransfersForBlockRange(
 
 	// Calculate totals per block
 	const results = [];
-	for (let blockNum = startBlock; blockNum <= endBlock; blockNum++) {
+	for (let blockNum = fromBlock; blockNum <= toBlock; blockNum++) {
 		const blockLogs = transfersByBlock.get(blockNum) || [];
 		const totalTransferred = blockLogs.reduce(
 			(sum, log) => sum + log.args.value,
