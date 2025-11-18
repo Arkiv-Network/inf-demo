@@ -15,7 +15,7 @@
 		"feed-real-time": "bun feedData.ts --realTime"
 	},
 	"dependencies": {
-		"@arkiv-network/sdk": "0.4.1",
+		"@arkiv-network/sdk": "0.4.5",
 		"@biomejs/biome": "2.2.4",
 		"@hono/node-server": "^1.8.0",
 		"hono": "^4.0.0",

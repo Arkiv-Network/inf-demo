@@ -16,8 +16,8 @@
 import {
 	createPublicClient,
 	createWalletClient,
-	http,
 	type Entity,
+	http,
 } from "@arkiv-network/sdk";
 import { privateKeyToAccount } from "@arkiv-network/sdk/accounts";
 import { kaolin, localhost } from "@arkiv-network/sdk/chains";
@@ -25,7 +25,7 @@ import { eq, gt } from "@arkiv-network/sdk/query";
 import type { Chain } from "viem";
 import { defineChain } from "viem";
 
-const DATA_VERSION = "0.11";
+const DATA_VERSION = "0.12";
 
 type AggregatedDataType = "hourly" | "daily";
 
@@ -131,7 +131,9 @@ async function deleteEntities(entities: Entity[]): Promise<void> {
 	const batchSize = 100;
 	let deletedCount = 0;
 
-	console.log(`\n🗑️  Deleting ${entities.length} entities in batches of ${batchSize}...`);
+	console.log(
+		`\n🗑️  Deleting ${entities.length} entities in batches of ${batchSize}...`,
+	);
 
 	for (let i = 0; i < entities.length; i += batchSize) {
 		const batch = entities.slice(i, i + batchSize);
@@ -260,4 +262,3 @@ if (typeIdx !== -1) {
 		process.exit(1);
 	}
 })();
-

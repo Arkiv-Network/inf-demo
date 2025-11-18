@@ -5,7 +5,7 @@ import {
 	http,
 } from "@arkiv-network/sdk";
 import { privateKeyToAccount } from "@arkiv-network/sdk/accounts";
-import { kaolin, localhost } from "@arkiv-network/sdk/chains";
+import { kaolin, localhost, mendoza } from "@arkiv-network/sdk/chains";
 import { eq, gt, lte } from "@arkiv-network/sdk/query";
 import { jsonToPayload } from "@arkiv-network/sdk/utils";
 import type { Chain } from "viem";
@@ -20,12 +20,13 @@ import {
 
 const MONTH_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const WEEK_IN_SECONDS = 60 * 60 * 24 * 7; // 7 days
-const DATA_VERSION = "0.11";
+const DATA_VERSION = "0.12";
 
 type AggregatedDataType = "hourly" | "daily";
 
 const chains = {
 	kaolin: kaolin,
+	mendoza: mendoza,
 	localhost: localhost,
 	infurademo: defineChain({
 		id: 60138453045,
