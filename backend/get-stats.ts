@@ -5,7 +5,6 @@ import {
 	getBlocksSinceTimestamp,
 	getLatestBlockNumber,
 	getOldestBlockNumber,
-	removeEntityByKey,
 } from "./src/arkiv";
 import { getGLMTransfersForBlockRange } from "./src/eth";
 
@@ -85,6 +84,6 @@ async function getGLMTransfers(fromBlock?: bigint, toBlock?: bigint) {
 	});
 }
 
-//getStats();
-//getBlocks();
-getGLMTransfers(23818754n, 23819050n);
+getStats();
+getBlocks();
+getGLMTransfers();

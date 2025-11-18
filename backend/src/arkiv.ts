@@ -140,7 +140,7 @@ async function getLatestOrOldestBlockNumber(latest: boolean): Promise<bigint> {
 		])
 		.limit(1)
 		.withAttributes()
-		.orderBy("EthDemo_blockNumber", "string", latest)
+		.orderBy("EthDemo_blockNumber", "string", latest ? "desc" : "asc")
 		.fetch();
 	return query.entities.length > 0
 		? BigInt(

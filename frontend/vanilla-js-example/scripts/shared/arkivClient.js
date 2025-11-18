@@ -17,8 +17,8 @@ const ARKIV_CHAIN = {
 	},
 	rpcUrls: {
 		default: {
-			http: ["https://infurademo.hoodi.arkiv.network/rpc"],
-			webSocket: ["wss://infurademo.hoodi.arkiv.network/rpc/ws"],
+			http: ["https://mendoza.hoodi.arkiv.network/rpc"],
+			webSocket: ["wss://mendoza.hoodi.arkiv.network/rpc/ws"],
 		},
 	},
 };
