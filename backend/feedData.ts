@@ -4,13 +4,14 @@
  * Feed data into Arkiv either historically or in real time.
  *
  * Usage:
- *   bun feedData.ts --history N    # feed N historical blocks before the oldest stored
+ *   bun feedData.ts --history N [--startBlock]   # feed N historical blocks before the oldest stored, optionally start from a specific block (this mode fill missed bloecks, otherwise it add N blocks at the end of history)
  *   bun feedData.ts --realTime     # continuously collect new blocks in real time
  *   bun feedData.ts --stats        # generate stats for hours and days
  */
 
 import { aggregateDataLastDay, aggregateDataLastHour } from "./src/aggregate";
 import {
+	getBlocksRange,
 	getLatestBlockNumber,
 	getOldestBlockNumber,
 	storeBlocks,
@@ -23,9 +24,17 @@ console.debug = () => {};
 //
 // Historical feed
 //
-async function feedHistory(numBlocks: number) {
+async function feedHistory(numBlocks: number, startBlock?: number) {
 	console.log(`🚀 Starting historical feed for last ${numBlocks} blocks\n`);
-	let oldestBlockNumber = await getOldestBlockNumber();
+
+	let oldestBlockNumber = startBlock
+		? BigInt(startBlock)
+		: await getOldestBlockNumber();
+	const fillMissedBlocks = startBlock !== undefined;
+
+	console.log(
+		`fillMissedBlocks: ${fillMissedBlocks} for startBlock: ${startBlock}`,
+	);
 	if (oldestBlockNumber === 0n) {
 		console.log("No blocks found; getting latest block");
 		const latestBlock = await getEthBlock(undefined, undefined, true);
@@ -44,10 +53,28 @@ async function feedHistory(numBlocks: number) {
 		const storedBlocks: BlockWithGasPrice[] = [];
 		const batchSize = 100;
 		let currentBlockNumber = oldestBlockNumber ? oldestBlockNumber - 1n : 0n;
-
+		const existingBlocks = fillMissedBlocks
+			? await getBlocksRange(
+					currentBlockNumber - BigInt(numBlocks),
+					currentBlockNumber,
+				)
+			: [];
 		console.log(`\n📥 Fetching ${numBlocks} blocks...`);
 		for (let i = 0; i < numBlocks; i++) {
 			try {
+				if (fillMissedBlocks) {
+					const block = existingBlocks.find(
+						(block) => block.blockNumber === currentBlockNumber,
+					);
+					if (block) {
+						// Block already exists in Arkiv, skip it
+						console.log(
+							`  ✓ Block ${currentBlockNumber} already exists in Arkiv, skipping`,
+						);
+						currentBlockNumber = currentBlockNumber - 1n;
+						continue;
+					}
+				}
 				const block = await getEthBlock(undefined, currentBlockNumber, true);
 				if (!block) throw new Error("Failed to fetch block");
 				blocksToStore.push(block);
@@ -271,6 +298,9 @@ const args = process.argv.slice(2);
 const hasRealTime = args.includes("--realTime");
 const historyIdx = args.indexOf("--history");
 const hasStats = args.includes("--stats");
+const startBlockIdx = args.indexOf("--startBlock");
+const startBlock =
+	startBlockIdx !== -1 ? parseInt(args[startBlockIdx + 1], 10) : undefined;
 
 console.log("hasRealTime", hasRealTime);
 console.log("historyIdx", historyIdx);
@@ -301,5 +331,5 @@ if (!hasRealTime && historyIdx === -1 && !hasStats) {
 		);
 		process.exit(1);
 	}
-	await feedHistory(N);
+	await feedHistory(N, startBlock);
 })();

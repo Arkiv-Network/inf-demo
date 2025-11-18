@@ -11,11 +11,11 @@ import { getGLMTransfersForBlockRange } from "./src/eth";
 //console.info = () => {};
 console.debug = () => {};
 
-async function getStats() {
+async function getStats(sinceTimestamp?: number, endTimestamp?: number) {
 	console.log("Getting hourly stats...");
 	const hourlyStats = await getAggregatedDataSinceTimestamp({
-		timestamp: 0,
-		endTimestamp: Math.floor(Date.now() / 1000),
+		timestamp: sinceTimestamp ?? 0,
+		endTimestamp: endTimestamp ?? Math.floor(Date.now() / 1000),
 		aggType: "hourly",
 	});
 	console.log("Hourly stats found:", hourlyStats.length);
@@ -25,8 +25,8 @@ async function getStats() {
 
 	console.log("Getting daily stats...");
 	const dailyStats = await getAggregatedDataSinceTimestamp({
-		timestamp: 0,
-		endTimestamp: Math.floor(Date.now() / 1000),
+		timestamp: sinceTimestamp ?? 0,
+		endTimestamp: endTimestamp ?? Math.floor(Date.now() / 1000),
 		aggType: "daily",
 	});
 	console.log("Daily stats found:", dailyStats.length);
@@ -35,7 +35,7 @@ async function getStats() {
 	});
 }
 
-async function getBlocks() {
+async function getBlocks(sinceTimestamp?: number, endTimestamp?: number) {
 	// Last stored block number
 	const lastStoredBlockNumber = await getLatestBlockNumber();
 	console.log("Last stored block number:", lastStoredBlockNumber);
@@ -43,10 +43,13 @@ async function getBlocks() {
 	const oldestBlockNumber = await getOldestBlockNumber();
 	console.log("Oldest block number:", oldestBlockNumber);
 
-	const blocks = await getBlocksSinceTimestamp(0);
+	const blocks = await getBlocksSinceTimestamp(
+		sinceTimestamp ?? 0,
+		endTimestamp,
+	);
 	for (const block of blocks) {
 		console.log(
-			blocks[0].transactionCount,
+			block.transactionCount,
 			block.blockNumber,
 			new Date(block.timestamp * 1000).toISOString(),
 			formatGwei(block.gasPrice),

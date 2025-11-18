@@ -6,7 +6,7 @@ import {
 } from "@arkiv-network/sdk";
 import { privateKeyToAccount } from "@arkiv-network/sdk/accounts";
 import { kaolin, localhost, mendoza } from "@arkiv-network/sdk/chains";
-import { eq, gt, lte } from "@arkiv-network/sdk/query";
+import { eq, gt, gte, lte } from "@arkiv-network/sdk/query";
 import { jsonToPayload } from "@arkiv-network/sdk/utils";
 import type { Chain } from "viem";
 import { defineChain } from "viem";
@@ -55,6 +55,11 @@ const arkivPublicClient = createPublicClient({
 	chain: chains[process.env.ARKIV_CHAIN as keyof typeof chains],
 	transport: http(),
 });
+
+const storeOwnerAddress = privateKeyToAccount(
+	process.env.ARKIV_PRIVATE_KEY as `0x${string}`,
+).address;
+console.debug("storeOwnerAddress", storeOwnerAddress);
 
 export async function storeBlocks(blocks: BlockWithGasPrice[]) {
 	let latestEthBlockNumber = 0n;
@@ -159,10 +164,6 @@ export async function getOldestBlockNumber(): Promise<bigint> {
 }
 
 export async function getBlock(blockNumber?: number): Promise<Entity | null> {
-	const storeOwnerAddress = privateKeyToAccount(
-		process.env.ARKIV_PRIVATE_KEY as `0x${string}`,
-	).address;
-	console.debug("storeOwnerAddress", storeOwnerAddress);
 	try {
 		const query = await arkivPublicClient
 			.buildQuery()
@@ -186,6 +187,34 @@ export async function getBlock(blockNumber?: number): Promise<Entity | null> {
 	}
 }
 
+export async function getBlocksRange(
+	startBlock: bigint,
+	endBlock: bigint,
+): Promise<BlockSchema[]> {
+	const query = await arkivPublicClient
+		.buildQuery()
+		.ownedBy(storeOwnerAddress)
+		.orderBy("EthDemo_blockNumber", "string", "asc")
+		.withPayload()
+		.limit(1000)
+		.where([
+			eq("project", "EthDemo"),
+			eq("EthDemo_dataType", "blockdata"),
+			eq("EthDemo_version", DATA_VERSION),
+			gte("EthDemo_blockNumber", startBlock.toString()),
+			lte("EthDemo_blockNumber", endBlock.toString()),
+		]);
+
+	const blocks = [];
+	const result = await query.fetch();
+	blocks.push(...result.entities);
+	while (result.hasNextPage()) {
+		await result.next();
+		blocks.push(...result.entities);
+	}
+	return blocks.map((entity) => blockSchema.parse(entity.toJson()));
+}
+
 export async function getBlocksSinceTimestamp(
 	timestamp: number,
 	endTimestamp?: number,
@@ -195,6 +224,7 @@ export async function getBlocksSinceTimestamp(
 	const limit = 1000;
 	const query = await arkivPublicClient
 		.buildQuery()
+		.orderBy("EthDemo_blockTimestamp", "number", "asc")
 		.where([
 			eq("project", "EthDemo"),
 			gt("EthDemo_blockTimestamp", timestamp),
