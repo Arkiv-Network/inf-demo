@@ -20,7 +20,7 @@ import {
 
 const MONTH_IN_SECONDS = 60 * 60 * 24 * 30; // 30 days
 const WEEK_IN_SECONDS = 60 * 60 * 24 * 7; // 7 days
-const DATA_VERSION = "0.12";
+export const DATA_VERSION = "0.13";
 
 type AggregatedDataType = "hourly" | "daily";
 

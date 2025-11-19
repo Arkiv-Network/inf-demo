@@ -1,12 +1,16 @@
 #!/usr/bin/env bun
 
 /**
- * Clean stats data from Arkiv since a given timestamp.
+ * Clean stats data from Arkiv since a given timestamp or delete a specific entity.
  *
  * Usage:
  *   bun clean.ts --timestamp TIMESTAMP              # Clean all stats (hourly and daily) since timestamp
  *   bun clean.ts --timestamp TIMESTAMP --type hourly # Clean only hourly stats since timestamp
  *   bun clean.ts --timestamp TIMESTAMP --type daily  # Clean only daily stats since timestamp
+ *   bun clean.ts --entity-key ENTITY_KEY             # Delete a specific entity by its key
+ *
+ * Options:
+ *   --dry-run                             # Dry run, don't delete anything
  *
  * Timestamp can be provided as:
  *   - Unix timestamp in seconds (e.g., 1704067200)
@@ -24,8 +28,7 @@ import { kaolin, localhost } from "@arkiv-network/sdk/chains";
 import { eq, gt } from "@arkiv-network/sdk/query";
 import type { Chain } from "viem";
 import { defineChain } from "viem";
-
-const DATA_VERSION = "0.12";
+import { DATA_VERSION } from "./src/arkiv";
 
 type AggregatedDataType = "hourly" | "daily";
 
@@ -105,6 +108,7 @@ async function getStatsEntitiesSinceTimestamp(
 		.buildQuery()
 		.where(whereConditions)
 		.withAttributes()
+		.withPayload()
 		.limit(limit);
 
 	const entities: Entity[] = [];
@@ -117,6 +121,33 @@ async function getStatsEntitiesSinceTimestamp(
 	}
 
 	return entities;
+}
+
+/**
+ * Delete a single entity by its key
+ */
+async function deleteEntityByKey(
+	entityKey: string,
+	dryRun?: boolean,
+): Promise<void> {
+	const key = entityKey.startsWith("0x")
+		? (entityKey as `0x${string}`)
+		: (`0x${entityKey}` as `0x${string}`);
+
+	console.log(`\n🗑️  Deleting entity: ${key}`);
+
+	if (dryRun) {
+		console.log("   (Dry run - would delete this entity)");
+		return;
+	}
+
+	try {
+		await arkivWalletClient.deleteEntity({ entityKey: key });
+		console.log(`\n✅ Successfully deleted entity: ${key}`);
+	} catch (error) {
+		console.error(`\n❌ Failed to delete entity ${key}:`, error);
+		throw error;
+	}
 }
 
 /**
@@ -142,7 +173,7 @@ async function deleteEntities(entities: Entity[]): Promise<void> {
 		}));
 
 		try {
-			const receipt = await arkivWalletClient.mutateEntities({
+			await arkivWalletClient.mutateEntities({
 				deletes,
 			});
 			deletedCount += batch.length;
@@ -164,7 +195,11 @@ async function deleteEntities(entities: Entity[]): Promise<void> {
 /**
  * Main cleanup function
  */
-async function cleanStats(timestamp: number, statsType?: AggregatedDataType) {
+async function cleanStats(
+	timestamp: number,
+	statsType?: AggregatedDataType,
+	dryRun?: boolean,
+) {
 	const timestampDate = new Date(timestamp * 1000);
 	console.log(`\n🧹 Cleaning stats data since ${timestampDate.toISOString()}`);
 	if (statsType) {
@@ -201,6 +236,14 @@ async function cleanStats(timestamp: number, statsType?: AggregatedDataType) {
 			console.log(`   - Daily stats: ${dailyCount}`);
 		}
 
+		if (dryRun) {
+			// show all entities
+			entities.forEach((entity) => {
+				console.log(entity.key);
+				console.log(entity.toText());
+			});
+			process.exit(0);
+		}
 		// Confirm deletion
 		console.log("\n⚠️  This will permanently delete the above entities.");
 		console.log("   Press Ctrl+C to cancel, or wait 3 seconds to continue...");
@@ -221,44 +264,89 @@ async function cleanStats(timestamp: number, statsType?: AggregatedDataType) {
 //
 function printUsageAndExit() {
 	console.error(
-		"Usage: bun clean.ts --timestamp TIMESTAMP [--type hourly|daily]\n" +
+		"Usage: bun clean.ts [--timestamp TIMESTAMP | --entity-key KEY] [options]\n" +
 			"  --timestamp TIMESTAMP   Unix timestamp (seconds) or ISO 8601 date string\n" +
-			"  --type TYPE             Optional: 'hourly' or 'daily' (default: both)",
+			"  --entity-key KEY        Entity key to delete (0x-prefixed hex string)\n" +
+			"  --type TYPE             Optional: 'hourly' or 'daily' (only with --timestamp, default: both)\n" +
+			"  --dry-run               Dry run, don't delete anything",
 	);
 	process.exit(1);
 }
 
 const args = process.argv.slice(2);
 const timestampIdx = args.indexOf("--timestamp");
+const entityKeyIdx = args.indexOf("--entity-key");
 const typeIdx = args.indexOf("--type");
+const dryRun = args.includes("--dry-run");
 
-if (timestampIdx === -1) {
-	console.error("❌ Missing required argument: --timestamp");
+// Validate that either timestamp or entity-key is provided, but not both
+if (timestampIdx === -1 && entityKeyIdx === -1) {
+	console.error("❌ Missing required argument: --timestamp or --entity-key");
 	printUsageAndExit();
 }
 
-const timestampStr = args[timestampIdx + 1];
-if (!timestampStr) {
-	console.error("❌ Missing timestamp value");
+if (timestampIdx !== -1 && entityKeyIdx !== -1) {
+	console.error(
+		"❌ Cannot use both --timestamp and --entity-key. Use one or the other.",
+	);
 	printUsageAndExit();
 }
 
-let statsType: AggregatedDataType | undefined;
-if (typeIdx !== -1) {
-	const typeValue = args[typeIdx + 1];
-	if (typeValue !== "hourly" && typeValue !== "daily") {
-		console.error("❌ Invalid stats type. Must be 'hourly' or 'daily'");
+// Handle entity-key mode
+if (entityKeyIdx !== -1) {
+	const entityKey = args[entityKeyIdx + 1];
+	if (!entityKey) {
+		console.error("❌ Missing entity key value");
 		printUsageAndExit();
 	}
-	statsType = typeValue;
-}
 
-(async () => {
-	try {
-		const timestamp = parseTimestamp(timestampStr);
-		await cleanStats(timestamp, statsType);
-	} catch (error) {
-		console.error("❌ Error:", error);
-		process.exit(1);
+	if (typeIdx !== -1) {
+		console.error(
+			"❌ --type option is only valid with --timestamp, not with --entity-key",
+		);
+		printUsageAndExit();
 	}
-})();
+
+	(async () => {
+		try {
+			if (dryRun) {
+				console.log("🧹 Dry run, not deleting anything");
+			}
+			await deleteEntityByKey(entityKey, dryRun);
+			console.log("\n🎉 Entity deletion completed successfully!");
+		} catch (error) {
+			console.error("❌ Error:", error);
+			process.exit(1);
+		}
+	})();
+} else {
+	// Handle timestamp mode
+	const timestampStr = args[timestampIdx + 1];
+	if (!timestampStr) {
+		console.error("❌ Missing timestamp value");
+		printUsageAndExit();
+	}
+
+	let statsType: AggregatedDataType | undefined;
+	if (typeIdx !== -1) {
+		const typeValue = args[typeIdx + 1];
+		if (typeValue !== "hourly" && typeValue !== "daily") {
+			console.error("❌ Invalid stats type. Must be 'hourly' or 'daily'");
+			printUsageAndExit();
+		}
+		statsType = typeValue as AggregatedDataType;
+	}
+
+	(async () => {
+		try {
+			if (dryRun) {
+				console.log("🧹 Dry run, not deleting anything");
+			}
+			const timestamp = parseTimestamp(timestampStr);
+			await cleanStats(timestamp, statsType, dryRun);
+		} catch (error) {
+			console.error("❌ Error:", error);
+			process.exit(1);
+		}
+	})();
+}

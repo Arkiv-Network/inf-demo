@@ -1,5 +1,4 @@
 import { formatGwei } from "viem";
-import { aggregateDataLastHour } from "./src/aggregate";
 import {
 	getAggregatedDataSinceTimestamp,
 	getBlocksSinceTimestamp,
